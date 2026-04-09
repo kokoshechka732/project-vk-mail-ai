@@ -1,0 +1,2 @@
+# project-vk-mail-ai
+
