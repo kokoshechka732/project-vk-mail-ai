@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from app.db.models.user import User
+from app.models.user import User
 
 class UserRepository:
     async def get_by_vk_id(self, session: AsyncSession, vk_user_id: int) -> User | None:
@@ -23,7 +23,7 @@ class UserRepository:
         try:
             return await self.create(session, vk_user_id)
         except IntegrityError:
-            # если два сообщения пришли одновременно и оба пытались создать пользователя
+            # если два апдейта одновременно
             await session.rollback()
             user = await self.get_by_vk_id(session, vk_user_id)
             if user:
