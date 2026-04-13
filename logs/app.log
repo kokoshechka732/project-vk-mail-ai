@@ -1,0 +1,840 @@
+2026-04-13 21:02:29,951 | INFO | app | Bot starting...
+2026-04-13 21:02:29,951 | INFO | vkbottle | Loop will be run forever
+2026-04-13 21:02:29,952 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-13 21:10:47,537 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-13 21:10:47,891 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000218048B7380>
+2026-04-13 21:21:28,078 | INFO | app | Bot starting...
+2026-04-13 21:21:28,078 | INFO | vkbottle | Loop will be run forever
+2026-04-13 21:21:28,080 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-13 21:28:23,444 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-13 21:28:23,706 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000244AA6674D0>
+2026-04-13 21:28:30,176 | INFO | app | Bot starting...
+2026-04-13 21:28:30,177 | INFO | vkbottle | Loop will be run forever
+2026-04-13 21:28:30,178 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-13 21:28:55,805 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:28:55,810 | ERROR | ai | DeepSeek failed for email_id=34: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:01,141 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:01,143 | ERROR | ai | DeepSeek failed for email_id=33: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:02,782 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:02,784 | ERROR | ai | DeepSeek failed for email_id=32: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:05,505 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:05,507 | ERROR | ai | DeepSeek failed for email_id=31: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:07,140 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:07,142 | ERROR | ai | DeepSeek failed for email_id=30: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:09,735 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:09,736 | ERROR | ai | DeepSeek failed for email_id=29: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:16,354 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:16,355 | ERROR | ai | DeepSeek failed for email_id=28: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:18,408 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:18,409 | ERROR | ai | DeepSeek failed for email_id=27: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:21,591 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:21,593 | ERROR | ai | DeepSeek failed for email_id=26: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:23,279 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:23,280 | ERROR | ai | DeepSeek failed for email_id=25: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:25,224 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:25,226 | ERROR | ai | DeepSeek failed for email_id=24: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:27,810 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:27,812 | ERROR | ai | DeepSeek failed for email_id=23: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:31,955 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:31,956 | ERROR | ai | DeepSeek failed for email_id=22: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:33,600 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:33,602 | ERROR | ai | DeepSeek failed for email_id=21: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:36,099 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:36,101 | ERROR | ai | DeepSeek failed for email_id=20: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:44,092 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:44,093 | ERROR | ai | DeepSeek failed for email_id=19: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:50,709 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:50,710 | ERROR | ai | DeepSeek failed for email_id=18: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:29:57,977 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:29:57,979 | ERROR | ai | DeepSeek failed for email_id=17: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:01,653 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:01,655 | ERROR | ai | DeepSeek failed for email_id=16: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:04,505 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:04,506 | ERROR | ai | DeepSeek failed for email_id=15: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:07,370 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:07,372 | ERROR | ai | DeepSeek failed for email_id=14: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:17,770 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:17,772 | ERROR | ai | DeepSeek failed for email_id=13: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:20,685 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:20,686 | ERROR | ai | DeepSeek failed for email_id=12: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:22,511 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:22,513 | ERROR | ai | DeepSeek failed for email_id=11: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:30:24,307 | INFO | httpx | HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 402 Payment Required"
+2026-04-13 21:30:24,309 | ERROR | ai | DeepSeek failed for email_id=10: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 147, in ai_classify_last_emails
+    result = await ds.classify_header(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 51, in classify_header
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '402 Payment Required' for url 'https://api.deepseek.com/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
+2026-04-13 21:34:17,448 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-13 21:34:17,893 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001518943F4D0>
+2026-04-14 00:01:09,345 | INFO | app | Bot starting...
+2026-04-14 00:01:09,346 | INFO | vkbottle | Loop will be run forever
+2026-04-14 00:01:09,347 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 00:01:34,945 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 00:09:50,896 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:09:50,898 | ERROR | email | YandexGPT failed for email_id=35: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 245, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:09:52,025 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:09:52,027 | ERROR | email | YandexGPT failed for email_id=36: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 245, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:15:57,429 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-14 00:15:57,724 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000210ECB07E00>
+2026-04-14 00:15:57,725 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:399> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-14 00:16:20,997 | INFO | app | Bot starting...
+2026-04-14 00:16:20,997 | INFO | vkbottle | Loop will be run forever
+2026-04-14 00:16:20,999 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 00:16:36,444 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 00:16:39,665 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:16:39,668 | ERROR | email | YandexGPT failed for email_id=36: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:16:41,265 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:16:41,267 | ERROR | email | YandexGPT failed for email_id=36: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:20:59,132 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:20:59,134 | ERROR | email | YandexGPT failed for email_id=37: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:21:00,512 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:21:00,514 | ERROR | email | YandexGPT failed for email_id=38: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:21:01,566 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:21:01,568 | ERROR | email | YandexGPT failed for email_id=39: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:21:02,963 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:21:02,965 | ERROR | email | YandexGPT failed for email_id=40: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:21:49,727 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:21:49,729 | ERROR | email | YandexGPT failed for email_id=41: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:26:52,314 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:26:52,317 | ERROR | email | YandexGPT failed for email_id=42: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    async with httpx.AsyncClient(timeout=45.0, verify=self.verify_ssl) as client:
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:26:53,411 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:26:53,413 | ERROR | email | YandexGPT failed for email_id=43: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    async with httpx.AsyncClient(timeout=45.0, verify=self.verify_ssl) as client:
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:31:57,836 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:31:57,838 | ERROR | email | YandexGPT failed for email_id=44: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    async with httpx.AsyncClient(timeout=45.0, verify=self.verify_ssl) as client:
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:33:01,251 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:33:01,253 | ERROR | email | YandexGPT failed for email_id=44: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    async with httpx.AsyncClient(timeout=45.0, verify=self.verify_ssl) as client:
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:37:05,767 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:37:05,769 | ERROR | email | YandexGPT failed for email_id=44: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 285, in _ai_classify_and_assign
+        primary_name = (result.suggested_folder or "Несортированное").strip()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    
+    
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 80, in classify_email
+    req_id,
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+2026-04-14 00:38:25,700 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-14 00:38:26,049 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002620054BA10>
+2026-04-14 00:38:26,050 | ERROR | asyncio | Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x00000262008F1EB0>, 356454.62657)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000002620054B620>
+2026-04-14 00:38:26,050 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:399> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-14 00:38:33,986 | INFO | app | Bot starting...
+2026-04-14 00:38:33,986 | INFO | vkbottle | Loop will be run forever
+2026-04-14 00:38:33,987 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 00:38:39,467 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 00:38:44,037 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:38:44,040 | ERROR | ai | YandexGPT HTTP 403 request_id=ba63b35d-b619-44d6-96c1-21ba1823e7f2 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:38:44,040 | ERROR | email | YandexGPT failed for email_id=44: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:43:48,258 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:43:48,260 | ERROR | ai | YandexGPT HTTP 403 request_id=558a629e-97fc-42e7-acad-a2c07800722f modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:43:48,260 | ERROR | email | YandexGPT failed for email_id=45: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:44:25,202 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:44:25,204 | ERROR | ai | YandexGPT HTTP 403 request_id=60711e7b-ef31-41f2-9f1d-874fa213f0f8 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:44:25,204 | ERROR | email | YandexGPT failed for email_id=46: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:44:26,296 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:44:26,298 | ERROR | ai | YandexGPT HTTP 403 request_id=13dd3033-0b45-4968-980c-b639a907bccd modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:44:26,298 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:45:53,040 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-14 00:45:53,347 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001971DC9BA10>
+2026-04-14 00:45:53,347 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-14 00:46:01,352 | INFO | app | Bot starting...
+2026-04-14 00:46:01,352 | INFO | vkbottle | Loop will be run forever
+2026-04-14 00:46:01,353 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 00:46:03,098 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 00:46:06,091 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:46:06,093 | ERROR | ai | YandexGPT HTTP 403 request_id=46cabdec-2391-4411-83e4-4f4d544e5dfb modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:46:06,093 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:51:09,616 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:51:09,618 | ERROR | ai | YandexGPT HTTP 403 request_id=6436d67a-4c30-4dd6-a950-e3e6a8b437e5 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:51:09,618 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:51:19,984 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-14 00:51:20,259 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000025DD4607A10>
+2026-04-14 00:51:20,260 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-14 00:51:27,074 | INFO | app | Bot starting...
+2026-04-14 00:51:27,074 | INFO | vkbottle | Loop will be run forever
+2026-04-14 00:51:27,076 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 00:51:29,803 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 00:51:33,503 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:51:33,505 | ERROR | ai | YandexGPT HTTP 403 request_id=4679c485-50fb-4a64-8557-6a08a4588367 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:51:33,505 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:56:41,238 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 00:56:41,240 | ERROR | ai | YandexGPT HTTP 403 request_id=f0bed0dd-c20f-4f9d-a0ed-3f5556997834 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 00:56:41,240 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:00:55,018 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 01:00:55,019 | ERROR | ai | YandexGPT HTTP 403 request_id=4afb4dff-24f6-42be-84f5-1ba583ca6c77 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:00:55,019 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
