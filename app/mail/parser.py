@@ -26,7 +26,6 @@ def parse_email(raw_bytes: bytes) -> dict:
     _name, from_addr = parseaddr(msg.get("From", ""))
     from_email = from_addr or None
 
-    # date
     received_at = None
     raw_date = msg.get("Date")
     if raw_date:
@@ -34,27 +33,6 @@ def parse_email(raw_bytes: bytes) -> dict:
             received_at = parsedate_to_datetime(raw_date)
         except Exception:
             received_at = None
-
-    # body (на День 2 мы качаем только headers → тела нет)
-    body_text = None
-    has_attachments = False
-
-    if msg.is_multipart():
-        for part in msg.walk():
-            disp = str(part.get("Content-Disposition") or "").lower()
-            if "attachment" in disp:
-                has_attachments = True
-                continue
-
-            ctype = part.get_content_type()
-            if ctype == "text/plain" and body_text is None:
-                payload = part.get_payload(decode=True) or b""
-                charset = part.get_content_charset() or "utf-8"
-                body_text = payload.decode(charset, errors="replace")
-    else:
-        payload = msg.get_payload(decode=True) or b""
-        charset = msg.get_content_charset() or "utf-8"
-        body_text = payload.decode(charset, errors="replace")
 
     return {
         "message_id": message_id,

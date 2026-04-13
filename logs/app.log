@@ -1,0 +1,3 @@
+2026-04-13 21:02:29,951 | INFO | app | Bot starting...
+2026-04-13 21:02:29,951 | INFO | vkbottle | Loop will be run forever
+2026-04-13 21:02:29,952 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>

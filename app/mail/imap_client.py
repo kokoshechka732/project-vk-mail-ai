@@ -7,8 +7,6 @@ GMAIL_HOST = "imap.gmail.com"
 GMAIL_PORT = 993
 
 
-# ---------- IMAP CHECK (подключение) ----------
-
 def _check_gmail_imap_sync(email: str, password: str) -> tuple[bool, str]:
     try:
         mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=30)
@@ -25,25 +23,21 @@ def _check_gmail_imap_sync(email: str, password: str) -> tuple[bool, str]:
 
 
 async def check_gmail_imap(email: str, password: str) -> tuple[bool, str]:
-    # чтобы не блокировать event loop бота
     return await asyncio.to_thread(_check_gmail_imap_sync, email, password)
 
 
-# ---------- FETCH последних писем (только заголовки) ----------
-
-def _fetch_last_n_gmail_headers_sync(email: str, password: str, n: int) -> List[Tuple[int, bytes]]:
+def _fetch_last_n_gmail_headers_sync(email: str, password: str, n: int, prefer_unseen: bool) -> List[Tuple[int, bytes]]:
     mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=60)
     mail.login(email, password)
     mail.select("INBOX")
 
-    # 1) Сначала пытаемся взять непрочитанные — быстрее и полезнее
-    status, data = mail.uid("search", None, "UNSEEN")
-    if status != "OK":
-        data = [b""]
+    uids: list[bytes] = []
 
-    uids = data[0].split() if data and data[0] else []
+    if prefer_unseen:
+        status, data = mail.uid("search", None, "UNSEEN")
+        if status == "OK" and data and data[0]:
+            uids = data[0].split()
 
-    # 2) Если непрочитанных нет — берем все
     if not uids:
         status, data = mail.uid("search", None, "ALL")
         if status != "OK":
@@ -51,14 +45,12 @@ def _fetch_last_n_gmail_headers_sync(email: str, password: str, n: int) -> List[
             return []
         uids = data[0].split() if data and data[0] else []
 
-    # Берём последние N UID
     last_uids = uids[-n:] if len(uids) > n else uids
 
     out: List[Tuple[int, bytes]] = []
     for uid_b in last_uids:
         uid = int(uid_b)
         try:
-            # Скачиваем только нужные заголовки (очень быстро)
             st, msg_data = mail.uid(
                 "fetch",
                 uid_b,
@@ -67,7 +59,6 @@ def _fetch_last_n_gmail_headers_sync(email: str, password: str, n: int) -> List[
             if st == "OK" and msg_data and msg_data[0] and isinstance(msg_data[0], tuple):
                 out.append((uid, msg_data[0][1]))
         except (socket.timeout, TimeoutError):
-            # одно письмо не скачалось — пропускаем, не валим весь процесс
             continue
         except Exception:
             continue
@@ -77,4 +68,10 @@ def _fetch_last_n_gmail_headers_sync(email: str, password: str, n: int) -> List[
 
 
 async def fetch_last_n_gmail(email: str, password: str, n: int = 10) -> List[Tuple[int, bytes]]:
-    return await asyncio.to_thread(_fetch_last_n_gmail_headers_sync, email, password, n)
+    # для сохранения в БД: предпочитаем UNSEEN
+    return await asyncio.to_thread(_fetch_last_n_gmail_headers_sync, email, password, n, True)
+
+
+async def fetch_last_n_gmail_all(email: str, password: str, n: int = 50) -> List[Tuple[int, bytes]]:
+    # для DEBUG: просто последние N из ALL
+    return await asyncio.to_thread(_fetch_last_n_gmail_headers_sync, email, password, n, False)
