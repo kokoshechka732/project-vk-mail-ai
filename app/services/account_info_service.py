@@ -3,6 +3,7 @@ from app.db.session import AsyncSessionMaker
 from app.db.repositories.user_repository import UserRepository
 from app.db.repositories.mail_account_repository import MailAccountRepository
 
+
 class AccountInfoService:
     def __init__(self) -> None:
         self.user_repo = UserRepository()

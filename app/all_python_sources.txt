@@ -1,0 +1,1466 @@
+# FILE: ai/client.py
+
+import json
+import re
+import httpx
+
+from app.core.settings import settings
+from app.ai.schemas import DeepSeekEmailClassification
+from app.ai.prompts import build_messages
+
+_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
+
+def _extract_json(text: str) -> str:
+    text = text.strip()
+    m = _CODE_FENCE_RE.search(text)
+    if m:
+        return m.group(1).strip()
+    return text
+
+
+class DeepSeekClient:
+    def __init__(self) -> None:
+        self.api_key = settings.DEEPSEEK_API_KEY.strip()
+        self.model = settings.DEEPSEEK_MODEL.strip()
+        self.base_url = settings.DEEPSEEK_BASE_URL.strip().rstrip("/")
+        self.endpoint = settings.DEEPSEEK_ENDPOINT.strip()
+        self.verify_ssl = bool(settings.DEEPSEEK_VERIFY_SSL)
+
+        if not self.api_key:
+            raise RuntimeError("DEEPSEEK_API_KEY is not set in .env")
+
+    @property
+    def url(self) -> str:
+        return f"{self.base_url}{self.endpoint}"
+
+    async def classify_email(
+        self,
+        subject: str | None,
+        from_email: str | None,
+        received_at: str | None,
+        body_snippet: str | None,
+        user_folders: list[str] | None = None,
+        user_rules: list[dict] | None = None,
+    ) -> DeepSeekEmailClassification:
+        messages = build_messages(
+            subject=subject,
+            from_email=from_email,
+            received_at=received_at,
+            body_snippet=body_snippet,
+            user_folders=user_folders,
+            user_rules=user_rules,
+        )
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        body = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0,
+        }
+
+        async with httpx.AsyncClient(timeout=30.0, verify=self.verify_ssl) as client:
+            r = await client.post(self.url, headers=headers, json=body)
+            r.raise_for_status()
+            data = r.json()
+
+        content = data["choices"][0]["message"]["content"]
+        content = _extract_json(content)
+
+        obj = json.loads(content)
+        return DeepSeekEmailClassification.model_validate(obj)
+
+================================================================================
+# FILE: ai/prompts.py
+
+import json
+from typing import Optional, List, Dict
+
+STANDARD_CATEGORIES = [
+    "academic", "work", "events", "finance", "services", "spam", "personal", "other"
+]
+
+SYSTEM_FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное"]
+
+
+def build_messages(
+    subject: Optional[str],
+    from_email: Optional[str],
+    received_at: Optional[str],
+    body_snippet: Optional[str],
+    user_folders: List[str] | None = None,
+    user_rules: List[Dict[str, str]] | None = None,
+) -> list[dict]:
+    user_folders = user_folders or []
+    user_rules = user_rules or []
+
+    allowed_folders = SYSTEM_FOLDERS + user_folders
+
+    payload = {
+        "subject": subject or "",
+        "from_email": from_email or "",
+        "received_at": received_at or "",
+        "body_snippet": (body_snippet or "")[:2000],
+        "standard_categories": STANDARD_CATEGORIES,
+        "user_folders": user_folders,
+        "user_rules": user_rules,
+        "allowed_folders": allowed_folders,
+    }
+
+    system = (
+        "Ты — ассистент для классификации электронных писем студента.\n"
+        "Твоя задача: проанализировать письмо и вернуть JSON с его категорией, важностью, "
+        "кратким содержанием и ключевыми действиями.\n\n"
+        "Стандартные категории:\n"
+        '- "academic" — учёба, пары, дедлайны, оценки, расписание\n'
+        '- "work" — стажировки, вакансии, карьера, HR\n'
+        '- "events" — мероприятия, хакатоны, конференции, встречи\n'
+        '- "finance" — стипендии, оплаты, счета, налоги\n'
+        '- "services" — уведомления сервисов (GitHub, Google, Notion и т.п.)\n'
+        '- "spam" — реклама, рассылки, мусор\n'
+        '- "personal" — личные письма от людей\n'
+        '- "other" — всё остальное\n\n'
+        "Также учитывай пользовательские папки, если они переданы ниже.\n"
+        "Если письмо подходит под описание пользовательской папки — используй её название "
+        "в поле category вместо стандартной категории.\n\n"
+        "Уровень важности:\n"
+        '- "high" — срочное/важное/требует действий/дедлайн/личное обращение\n'
+        '- "medium" — полезно, но не критично\n'
+        '- "low" — можно игнорировать\n\n'
+        "Правила:\n"
+        "- Возвращай ТОЛЬКО JSON (без текста вокруг).\n"
+        "- summary: 1 предложение, по сути, до 150 символов.\n"
+        "- deadline: дата в формате YYYY-MM-DD или null.\n"
+        "- actions: массив строк действий (может быть []).\n"
+        "- suggested_folder: выбери строго одну папку из allowed_folders.\n\n"
+        "Формат ответа (строго JSON):\n"
+        "{"
+        '"category":"...",'
+        '"importance":"low|medium|high",'
+        '"summary":"...",'
+        '"actions":["..."],'
+        '"deadline":"YYYY-MM-DD"|null,'
+        '"suggested_folder":"one of allowed_folders"'
+        "}"
+    )
+
+    user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False)
+
+    return [
+        {"role": "system", "text": system},
+        {"role": "user", "text": user},
+    ]
+
+================================================================================
+# FILE: ai/schemas.py
+
+from pydantic import BaseModel, Field
+from typing import Literal, Optional, List
+
+Importance = Literal["low", "medium", "high"]
+
+class AIEmailClassification(BaseModel):
+    category: str = Field(..., description="academic|work|events|finance|services|spam|personal|other OR custom folder name")
+    importance: Importance
+    summary: str  # 1 sentence <=150 chars (мы дополнительно обрежем)
+    actions: List[str] = Field(default_factory=list)
+    deadline: Optional[str] = None  # YYYY-MM-DD or null
+    suggested_folder: str
+
+================================================================================
+# FILE: bot/bot.py
+
+from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
+import requests
+import json
+
+app = FastAPI()
+
+TOKEN = ""
+CONFIRMATION = ""
+
+
+# 🎛 КЛАВИАТУРА
+def get_main_keyboard():
+    keyboard = {
+        "one_time": False,
+        "buttons": [
+            [
+                {"action": {"type": "text", "label": "📩 Подключить почту"}, "color": "primary"}
+            ],
+            [
+                {"action": {"type": "text", "label": "📁 Папки"}, "color": "primary"},
+                {"action": {"type": "text", "label": "📰 Дайджест"}, "color": "positive"}
+            ],
+            [
+                {"action": {"type": "text", "label": "❓ Помощь"}, "color": "secondary"}
+            ]
+        ]
+    }
+    return json.dumps(keyboard, ensure_ascii=False)
+
+
+def send_message(user_id, text):
+    requests.post(
+        "https://api.vk.com/method/messages.send",
+        params={
+            "user_id": user_id,
+            "message": text,
+            "random_id": 0,
+            "access_token": TOKEN,
+            "v": "5.199",
+            "keyboard": get_main_keyboard()
+        }
+    )
+
+
+@app.post("/")
+async def vk_callback(request: Request):
+    data = await request.json()
+
+    # 🔑 Подтверждение
+    if data["type"] == "confirmation":
+        return PlainTextResponse(CONFIRMATION)
+
+    # 💬 Сообщение
+    if data["type"] == "message_new":
+        user_id = data["object"]["message"]["from_id"]
+        text = data["object"]["message"]["text"].lower()
+
+        # 📩 ПОДКЛЮЧЕНИЕ ПОЧТЫ
+        if text == "📩 подключить почту":
+            send_message(user_id, "📩 Начинаем подключение почты. Скоро добавим Gmail 👀")
+
+        # 📁 ПАПКИ
+        elif text == "📁 папки":
+            send_message(user_id, "📁 Тут будут твои папки (пока в разработке)")
+
+        # 📰 ДАЙДЖЕСТ
+        elif text == "📰 дайджест":
+            send_message(user_id, "📰 Настройка дайджеста скоро появится")
+
+        # ❓ ПОМОЩЬ
+        elif text == "❓ помощь":
+            send_message(user_id, "❓ Я бот для работы с почтой. Скоро буду мощным 😎")
+
+        # 👋 ЛЮБОЕ ДРУГОЕ
+        else:
+            send_message(user_id, "Выбери действие 👇")
+
+    return PlainTextResponse("ok")
+
+================================================================================
+# FILE: bot/insecure_http.py
+
+import json
+import aiohttp
+
+
+class InsecureAiohttpClient:
+    """
+    Аварийный HTTP-клиент для vkbottle:
+    - отключает проверку SSL (ssl=False)
+    - реализует request_text и request_json, как ожидает vkbottle
+    """
+
+    def __init__(self) -> None:
+        self._session: aiohttp.ClientSession | None = None
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            connector = aiohttp.TCPConnector(ssl=False)
+            self._session = aiohttp.ClientSession(connector=connector)
+        return self._session
+
+    async def request_text(self, url: str, method: str = "POST", data=None, **kwargs) -> str:
+        session = await self._get_session()
+        async with session.request(url=url, method=method, data=data, **kwargs) as resp:
+            return await resp.text()
+
+    async def request_json(self, url: str, method: str = "POST", data=None, **kwargs):
+        text = await self.request_text(url=url, method=method, data=data, **kwargs)
+        return json.loads(text)
+
+================================================================================
+# FILE: bot/keyboards.py
+
+from vkbottle import Keyboard, Text, KeyboardButtonColor
+
+FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное"]
+
+
+def main_menu_json() -> str:
+    kb = Keyboard(one_time=False)
+
+    kb.add(Text("Подключить Gmail"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Проверить почту"), color=KeyboardButtonColor.PRIMARY)
+    kb.row()
+
+    kb.add(Text("Мой Gmail"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text("Мои папки"), color=KeyboardButtonColor.SECONDARY)
+    kb.row()
+
+    kb.add(Text("ai: классифицировать 25"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text("DEBUG: письма"), color=KeyboardButtonColor.SECONDARY)
+    kb.row()
+
+    kb.add(Text("Дайджест"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text("Помощь"), color=KeyboardButtonColor.SECONDARY)
+
+    return kb.get_json()
+
+
+def cancel_menu_json() -> str:
+    kb = Keyboard(one_time=False)
+    kb.add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE)
+    return kb.get_json()
+
+
+def folders_menu_json() -> str:
+    kb = Keyboard(one_time=False)
+
+    kb.add(Text("Важное"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Учёба"), color=KeyboardButtonColor.PRIMARY)
+    kb.row()
+
+    kb.add(Text("Стажировки"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Рассылки"), color=KeyboardButtonColor.PRIMARY)
+    kb.row()
+
+    kb.add(Text("Несортированное"), color=KeyboardButtonColor.PRIMARY)
+    kb.row()
+
+    kb.add(Text("Назад в меню"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE)
+
+    return kb.get_json()
+
+================================================================================
+# FILE: bot/main.py
+
+import truststore
+truststore.inject_into_ssl()
+
+from vkbottle import API
+from vkbottle.bot import Bot, Message
+
+from app.core.settings import settings
+from app.bot.insecure_http import InsecureAiohttpClient
+from app.bot.keyboards import (
+    main_menu_json,
+    cancel_menu_json,
+    folders_menu_json,
+    FOLDERS,
+)
+
+from app.services.user_service import UserService
+from app.services.mail_service import MailService
+from app.services.email_service import EmailService
+from app.services.account_info_service import AccountInfoService
+from app.services.folder_view_service import FolderViewService
+import logging
+import sys
+from pathlib import Path
+
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8"),
+    ],
+)
+
+logger = logging.getLogger("app")
+logger.info("Bot starting...")
+
+api = API(token=settings.VK_BOT_TOKEN, http_client=InsecureAiohttpClient())
+bot = Bot(api=api)
+
+user_service = UserService()
+mail_service = MailService()
+email_service = EmailService()
+info_service = AccountInfoService()
+folder_view = FolderViewService()
+
+
+# ---------------- STATE (MVP: in-memory) ----------------
+state: dict[int, dict] = {}
+
+
+def set_state(vk_user_id: int, name: str | None, data: dict | None = None) -> None:
+    if name is None:
+        state.pop(vk_user_id, None)
+    else:
+        state[vk_user_id] = {"name": name, "data": data or {}}
+
+
+def get_state_name(vk_user_id: int) -> str | None:
+    s = state.get(vk_user_id)
+    return s["name"] if s else None
+
+
+def get_state_data(vk_user_id: int) -> dict:
+    s = state.get(vk_user_id)
+    return s["data"] if s else {}
+
+
+@bot.on.message()
+async def router(message: Message):
+    vk_user_id = message.from_id
+    text = (message.text or "").strip()
+    t = text.casefold()
+
+    # ensure user exists
+    await user_service.ensure_user(vk_user_id)
+
+    st_name = get_state_name(vk_user_id)
+    st_data = get_state_data(vk_user_id)
+
+    # ===== global commands =====
+    if t == "отмена":
+        set_state(vk_user_id, None)
+        await message.answer("Ок, отменил.", keyboard=main_menu_json())
+        return
+
+    if t in ("начать", "start", "старт"):
+        set_state(vk_user_id, None)
+        await message.answer("Привет! Выбери действие:", keyboard=main_menu_json())
+        return
+
+    if t == "помощь":
+        await message.answer(
+            "Кнопки:\n"
+            "- Подключить Gmail\n"
+            "- Проверить почту\n"
+            "- Дайджест\n"
+            "- Мой Gmail\n"
+            "- Мои папки\n"
+            "- Сортировать 25 (разложить последние 25 писем в БД по папкам)\n"
+            "- DEBUG: письма (показать заголовки последних писем из Gmail)\n\n"
+            "Для Gmail нужен App Password (пароль приложения) при включенной 2FA.",
+            keyboard=main_menu_json(),
+        )
+        return
+
+    if t == "назад в меню":
+        set_state(vk_user_id, None)
+        await message.answer("Меню:", keyboard=main_menu_json())
+        return
+
+    # ===== always-available buttons =====
+    if t == "мой gmail":
+        msg = await info_service.get_gmail_info(vk_user_id)
+        await message.answer(msg, keyboard=main_menu_json())
+        return
+
+    if t == "подключить gmail":
+        set_state(vk_user_id, "wait_gmail_email", {})
+        await message.answer("Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
+        return
+
+    if t == "проверить почту":
+        await message.answer("Скачиваю последние письма (заголовки)...")
+        saved, code = await email_service.fetch_and_store_last(vk_user_id, n=25)
+
+        if code == "NO_MAIL":
+            await message.answer("Сначала подключи Gmail (кнопка «Подключить Gmail»).", keyboard=main_menu_json())
+            return
+        if code == "IMAP_TIMEOUT":
+            await message.answer("Gmail отвечает слишком долго. Попробуй ещё раз позже.", keyboard=main_menu_json())
+            return
+        if code == "IMAP_ERROR":
+            await message.answer("Не удалось получить письма из Gmail (ошибка IMAP).", keyboard=main_menu_json())
+            return
+        if code != "OK":
+            await message.answer("Не удалось проверить почту.", keyboard=main_menu_json())
+            return
+
+        await message.answer(f"Готово! Сохранено новых писем: {saved}", keyboard=main_menu_json())
+        return
+
+    if t == "дайджест":
+        ok, digest_text = await email_service.build_digest_text(vk_user_id, limit=10)
+        await message.answer(digest_text, keyboard=main_menu_json())
+        return
+
+    if t == "ai: классифицировать 25":
+        await message.answer("AI-классифицирую последние 25 писем...")
+        try:
+            ok, msg = await email_service.ai_classify_last_emails(vk_user_id, limit=25)
+            await message.answer(msg, keyboard=main_menu_json())
+        except RuntimeError as e:
+            await message.answer(f"AI недоступен: {e}\nДобавь DEEPSEEK_API_KEY в .env", keyboard=main_menu_json())
+        return
+
+    if t == "debug: письма":
+        await message.answer("DEBUG: получаю последние письма из Gmail (заголовки)...")
+        ok, msg = await email_service.debug_list_inbox_headers(vk_user_id, n=50)
+        await message.answer(msg, keyboard=main_menu_json())
+        return
+
+    # ===== Gmail connect states =====
+    if st_name == "wait_gmail_email":
+        email = text
+        if "@" not in email or "." not in email:
+            await message.answer("Похоже, это не email. Введи Gmail адрес ещё раз:", keyboard=cancel_menu_json())
+            return
+
+        st_data["email"] = email
+        set_state(vk_user_id, "wait_gmail_pass", st_data)
+        await message.answer(
+            "Теперь введи пароль приложения Gmail (App Password). Можно с пробелами — я их уберу.",
+            keyboard=cancel_menu_json(),
+        )
+        return
+
+    if st_name == "wait_gmail_pass":
+        app_pass = text
+        email = st_data.get("email")
+        if not email:
+            set_state(vk_user_id, "wait_gmail_email", {})
+            await message.answer("Не нашёл email. Введи Gmail адрес заново:", keyboard=cancel_menu_json())
+            return
+
+        await message.answer("Проверяю доступ к Gmail по IMAP...")
+        ok, code = await mail_service.connect_gmail(vk_user_id, email, app_pass)
+        set_state(vk_user_id, None)
+
+        if ok:
+            await message.answer("Готово! Gmail подключен.", keyboard=main_menu_json())
+        else:
+            if code == "AUTH_ERROR":
+                await message.answer("Не удалось войти. Проверь Gmail адрес и App Password.", keyboard=main_menu_json())
+            elif code == "TIMEOUT":
+                await message.answer("Gmail не ответил вовремя. Попробуй позже.", keyboard=main_menu_json())
+            else:
+                await message.answer("Не удалось подключить Gmail (неизвестная ошибка).", keyboard=main_menu_json())
+        return
+
+    # ===== Folders UI (buttons) =====
+    if t == "мои папки":
+        set_state(vk_user_id, "folders_menu", {})
+        await message.answer("Выбери папку:", keyboard=folders_menu_json())
+        return
+
+    # Если мы в меню папок — не “выкидываем”: показываем папку и оставляем клавиатуру папок
+    if st_name == "folders_menu" and text in FOLDERS:
+        folder_name = text
+        msg = await folder_view.last_emails_in_folder(vk_user_id, folder_name, limit=5)
+        await message.answer(msg, keyboard=folders_menu_json())
+        return
+
+    # Если пользователь нажал папку, но не в состоянии folders_menu — всё равно покажем и включим меню папок
+    if text in FOLDERS:
+        set_state(vk_user_id, "folders_menu", {})
+        folder_name = text
+        msg = await folder_view.last_emails_in_folder(vk_user_id, folder_name, limit=5)
+        await message.answer(msg, keyboard=folders_menu_json())
+        return
+
+    await message.answer("Не понял. Нажми кнопку меню или напиши «Начать».", keyboard=main_menu_json())
+
+
+if __name__ == "__main__":
+    bot.run_forever()
+
+================================================================================
+# FILE: core/settings.py
+
+from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=str(BASE_DIR / ".env"),
+        extra="ignore",
+    )
+
+    VK_BOT_TOKEN: str
+    DATABASE_URL: str
+
+    # YandexGPT
+    YANDEX_API_KEY: str
+    YANDEX_FOLDER_ID: str
+    YANDEX_MODEL_NAME: str = "yandexgpt"
+    YANDEX_MODEL_VERSION: str = "latest"
+    YANDEX_ENDPOINT: str = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    YANDEX_VERIFY_SSL: bool = True
+
+settings = Settings()
+
+================================================================================
+# FILE: db/base.py
+
+from sqlalchemy.orm import DeclarativeBase
+
+class Base(DeclarativeBase):
+    pass
+
+================================================================================
+# FILE: db/init_db.py
+
+import asyncio
+
+from app.db.session import engine
+from app.db.base import Base
+import app.models 
+
+_schema_ready = False
+_lock: asyncio.Lock | None = None
+
+
+def _get_lock() -> asyncio.Lock:
+    global _lock
+    if _lock is None:
+        _lock = asyncio.Lock()
+    return _lock
+
+
+async def ensure_schema() -> None:
+    """
+    Создаёт таблицы один раз, в ТОМ ЖЕ event loop, где работает бот.
+    Поэтому не будет ошибок "different loop".
+    """
+    global _schema_ready
+    if _schema_ready:
+        return
+
+    async with _get_lock():
+        if _schema_ready:
+            return
+
+        print("DB: creating tables (create_all)...")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        _schema_ready = True
+        print("DB: schema ready")
+
+================================================================================
+# FILE: db/repositories/email_repository.py
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.email import Email
+
+
+class EmailRepository:
+    async def exists_by_uid(self, session: AsyncSession, mail_account_id: int, imap_uid: int) -> bool:
+        res = await session.execute(
+            select(Email.id).where(
+                Email.mail_account_id == mail_account_id,
+                Email.imap_uid == imap_uid,
+            )
+        )
+        return res.scalar_one_or_none() is not None
+
+    async def save(self, session: AsyncSession, email: Email) -> Email:
+        session.add(email)
+        await session.flush()
+        return email
+
+    async def list_last(self, session: AsyncSession, user_id: int, limit: int = 10) -> list[Email]:
+        res = await session.execute(
+            select(Email).where(Email.user_id == user_id).order_by(Email.id.desc()).limit(limit)
+        )
+        return list(res.scalars().all())
+
+================================================================================
+# FILE: db/repositories/folder_repository.py
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.folder import Folder
+
+SYSTEM_FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное"]
+
+
+class FolderRepository:
+    async def list_by_user(self, session: AsyncSession, user_id: int) -> list[Folder]:
+        res = await session.execute(select(Folder).where(Folder.user_id == user_id).order_by(Folder.id.asc()))
+        return list(res.scalars().all())
+
+    async def get_by_name(self, session: AsyncSession, user_id: int, name: str) -> Folder | None:
+        res = await session.execute(select(Folder).where(Folder.user_id == user_id, Folder.name == name))
+        return res.scalar_one_or_none()
+
+    async def create(self, session: AsyncSession, user_id: int, name: str, is_system: bool = True) -> Folder:
+        obj = Folder(user_id=user_id, name=name, is_system=is_system)
+        session.add(obj)
+        await session.flush()
+        return obj
+
+    async def ensure_system_folders(self, session: AsyncSession, user_id: int) -> dict[str, Folder]:
+        existing = await self.list_by_user(session, user_id)
+        by_name = {f.name: f for f in existing}
+
+        for name in SYSTEM_FOLDERS:
+            if name not in by_name:
+                by_name[name] = await self.create(session, user_id, name, is_system=True)
+
+        return by_name
+
+================================================================================
+# FILE: db/repositories/mail_account_repository.py
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.mail_account import MailAccount
+
+
+class MailAccountRepository:
+    async def get_active_gmail(self, session: AsyncSession, user_id: int) -> MailAccount | None:
+        res = await session.execute(
+            select(MailAccount).where(
+                MailAccount.user_id == user_id,
+                MailAccount.provider == "gmail",
+                MailAccount.is_active == True,  # noqa: E712
+            )
+        )
+        return res.scalar_one_or_none()
+
+    async def upsert_gmail(self, session: AsyncSession, user_id: int, email_address: str, app_password: str) -> MailAccount:
+        existing = await self.get_active_gmail(session, user_id)
+        if existing:
+            existing.email_address = email_address
+            existing.app_password = app_password
+            existing.imap_host = "imap.gmail.com"
+            existing.imap_port = 993
+            return existing
+
+        obj = MailAccount(
+            user_id=user_id,
+            provider="gmail",
+            email_address=email_address,
+            app_password=app_password,
+            imap_host="imap.gmail.com",
+            imap_port=993,
+            is_active=True,
+        )
+        session.add(obj)
+        await session.flush()
+        return obj
+
+================================================================================
+# FILE: db/repositories/user_repository.py
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+
+from app.models.user import User
+
+class UserRepository:
+    async def get_by_vk_id(self, session: AsyncSession, vk_user_id: int) -> User | None:
+        res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+        return res.scalar_one_or_none()
+
+    async def create(self, session: AsyncSession, vk_user_id: int) -> User:
+        user = User(vk_user_id=vk_user_id)
+        session.add(user)
+        await session.flush()
+        return user
+
+    async def get_or_create(self, session: AsyncSession, vk_user_id: int) -> User:
+        user = await self.get_by_vk_id(session, vk_user_id)
+        if user:
+            return user
+
+        try:
+            return await self.create(session, vk_user_id)
+        except IntegrityError:
+            # если два апдейта одновременно
+            await session.rollback()
+            user = await self.get_by_vk_id(session, vk_user_id)
+            if user:
+                return user
+            raise
+
+================================================================================
+# FILE: db/session.py
+
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from app.core.settings import settings
+
+engine = create_async_engine(settings.DATABASE_URL, echo=False)
+
+AsyncSessionMaker = async_sessionmaker(
+    engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
+
+================================================================================
+# FILE: mail/imap_client.py
+
+import asyncio
+import imaplib
+import socket
+from typing import List, Tuple, Optional
+
+GMAIL_HOST = "imap.gmail.com"
+GMAIL_PORT = 993
+
+def _check_gmail_imap_sync(email: str, password: str) -> tuple[bool, str]:
+    try:
+        mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=30)
+        mail.login(email, password)
+        mail.select("INBOX")
+        mail.logout()
+        return True, "OK"
+    except imaplib.IMAP4.error:
+        return False, "AUTH_ERROR"
+    except (socket.timeout, TimeoutError):
+        return False, "TIMEOUT"
+    except Exception:
+        return False, "UNKNOWN_ERROR"
+
+async def check_gmail_imap(email: str, password: str) -> tuple[bool, str]:
+    return await asyncio.to_thread(_check_gmail_imap_sync, email, password)
+
+def _fetch_last_n_gmail_preview_sync(email: str, password: str, n: int) -> List[Tuple[int, bytes, bytes]]:
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+    mail.login(email, password)
+    mail.select("INBOX")
+
+    status, data = mail.uid("search", None, "ALL")
+    if status != "OK":
+        mail.logout()
+        return []
+
+    uids = data[0].split() if data and data[0] else []
+    last_uids = uids[-n:] if len(uids) > n else uids
+
+    out: List[Tuple[int, bytes, bytes]] = []
+    fetch_query = "(BODY.PEEK[HEADER.FIELDS (SUBJECT FROM DATE MESSAGE-ID)] BODY.PEEK[TEXT]<0.4096>)"
+
+    for uid_b in last_uids:
+        uid = int(uid_b)
+        try:
+            st, msg_data = mail.uid("fetch", uid_b, fetch_query)
+            if st != "OK" or not msg_data:
+                continue
+
+            header_bytes: Optional[bytes] = None
+            text_bytes: Optional[bytes] = None
+
+            for item in msg_data:
+                if not isinstance(item, tuple) or len(item) < 2:
+                    continue
+                meta: bytes = item[0] or b""
+                payload: bytes = item[1] or b""
+                meta_u = meta.upper()
+
+                if b"HEADER.FIELDS" in meta_u:
+                    header_bytes = payload
+                elif b"BODY[TEXT]" in meta_u:
+                    text_bytes = payload
+
+            out.append((uid, header_bytes or b"", text_bytes or b""))
+        except (socket.timeout, TimeoutError):
+            continue
+        except Exception:
+            continue
+
+    mail.logout()
+    return out
+
+async def fetch_last_n_gmail_preview(email: str, password: str, n: int = 25) -> List[Tuple[int, bytes, bytes]]:
+    return await asyncio.to_thread(_fetch_last_n_gmail_preview_sync, email, password, n)
+
+async def fetch_last_n_gmail_preview_debug(email: str, password: str, n: int = 50) -> List[Tuple[int, bytes, bytes]]:
+    return await asyncio.to_thread(_fetch_last_n_gmail_preview_sync, email, password, n)
+
+================================================================================
+# FILE: mail/parser.py
+
+from email import message_from_bytes
+from email.header import decode_header
+from email.utils import parseaddr, parsedate_to_datetime
+
+def _decode_header(value: str | None) -> str | None:
+    if not value:
+        return None
+    parts = decode_header(value)
+    out = ""
+    for text, enc in parts:
+        if isinstance(text, bytes):
+            out += text.decode(enc or "utf-8", errors="replace")
+        else:
+            out += text
+    out = out.strip()
+    return out or None
+
+def _decode_text_bytes(b: bytes) -> str:
+    if not b:
+        return ""
+    try:
+        return b.decode("utf-8", errors="replace")
+    except Exception:
+        return b.decode("latin-1", errors="replace")
+
+def _make_preview(text: str, max_lines: int = 20, max_chars: int = 1200) -> str:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [ln.strip() for ln in text.split("\n")]
+    lines = [ln for ln in lines if ln]
+    lines = lines[:max_lines]
+    preview = "\n".join(lines).strip()
+    if len(preview) > max_chars:
+        preview = preview[:max_chars].rstrip() + "..."
+    return preview
+
+def parse_email_preview(header_bytes: bytes, text_snippet_bytes: bytes) -> dict:
+    msg = message_from_bytes(header_bytes or b"")
+
+    subject = _decode_header(msg.get("Subject"))
+    message_id = msg.get("Message-ID")
+
+    _name, from_addr = parseaddr(msg.get("From", ""))
+    from_email = from_addr or None
+
+    received_at = None
+    raw_date = msg.get("Date")
+    if raw_date:
+        try:
+            received_at = parsedate_to_datetime(raw_date)
+        except Exception:
+            received_at = None
+
+    raw_text = _decode_text_bytes(text_snippet_bytes or b"")
+    body_preview = _make_preview(raw_text)
+
+    return {
+        "message_id": message_id,
+        "subject": subject,
+        "from_email": from_email,
+        "received_at": received_at,
+        "body_text": body_preview or None,
+        "has_attachments": False,
+    }
+
+================================================================================
+# FILE: models/__init__.py
+
+from .user import User  # noqa: F401
+from .mail_account import MailAccount  # noqa: F401
+from .email import Email  # noqa: F401
+from .folder import Folder  # noqa: F401
+from .custom_rule import CustomRule  # noqa: F401
+
+================================================================================
+# FILE: models/custom_rule.py
+
+from sqlalchemy import DateTime, ForeignKey, Text, Boolean, Integer, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+class CustomRule(Base):
+    __tablename__ = "custom_rules"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    folder_id: Mapped[int] = mapped_column(ForeignKey("folders.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    rule_text: Mapped[str] = mapped_column(Text, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, server_default="100")
+
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+================================================================================
+# FILE: models/email.py
+
+from sqlalchemy import DateTime, ForeignKey, String, Text, Boolean, Integer, Float, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class Email(Base):
+    __tablename__ = "emails"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    mail_account_id: Mapped[int] = mapped_column(ForeignKey("mail_accounts.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    folder_id: Mapped[int | None] = mapped_column(
+        ForeignKey("folders.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+
+    imap_uid: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    message_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    subject: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    from_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    received_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    body_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    has_attachments: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+
+    ai_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_importance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    ai_category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    ai_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ai_classified_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+================================================================================
+# FILE: models/folder.py
+
+from sqlalchemy import DateTime, ForeignKey, String, Boolean, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class Folder(Base):
+    __tablename__ = "folders"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
+    is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+================================================================================
+# FILE: models/mail_account.py
+
+from sqlalchemy import DateTime, ForeignKey, String, Integer, Boolean, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class MailAccount(Base):
+    __tablename__ = "mail_accounts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)  # "gmail"
+    email_address: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    # MVP УПРОЩЕНИЕ: храним пароль приложения в открытом виде (ПОТОМ ЗАМЕНИМ НА ШИФРОВАНИЕ)
+    app_password: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    imap_host: Mapped[str] = mapped_column(String(255), nullable=False)
+    imap_port: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+================================================================================
+# FILE: models/user.py
+
+from sqlalchemy import BigInteger, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    vk_user_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True, nullable=False)
+
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+================================================================================
+# FILE: scripts/test_deepseek.py
+
+import asyncio
+from ai.client import DeepSeekClient
+
+async def main():
+    c = DeepSeekClient()
+    r = await c.classify_header(
+        subject="Срочно: дедлайн сдачи проекта завтра",
+        from_email="teacher@university.edu",
+        received_at="2026-04-13T10:00:00Z",
+    )
+    print(r)
+
+asyncio.run(main())
+
+================================================================================
+# FILE: scripts/test_yandex.py
+
+import asyncio
+from app.ai.client import YandexGPTClient
+
+async def main():
+    ya = YandexGPTClient()
+    result = await ya.classify_email(
+        subject="Срочно: дедлайн сдачи проекта завтра",
+        from_email="teacher@university.edu",
+        received_at="2026-04-13",
+        body_snippet="Нужно сдать до завтра 23:59. В LMS уже открыт прием.",
+        user_folders=[],
+        user_rules=[],
+    )
+    print(result)
+
+asyncio.run(main())
+
+================================================================================
+# FILE: security/crypto.py
+
+
+
+================================================================================
+# FILE: services/account_info_service.py
+
+from app.db.init_db import ensure_schema
+from app.db.session import AsyncSessionMaker
+from app.db.repositories.user_repository import UserRepository
+from app.db.repositories.mail_account_repository import MailAccountRepository
+
+class AccountInfoService:
+    def __init__(self) -> None:
+        self.user_repo = UserRepository()
+        self.mail_repo = MailAccountRepository()
+
+    async def get_gmail_info(self, vk_user_id: int) -> str:
+        await ensure_schema()
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return "Сначала напиши «Начать»."
+                acc = await self.mail_repo.get_active_gmail(session, user.id)
+                if not acc:
+                    return "Gmail не подключен. Нажми «Подключить Gmail»."
+                return f"Gmail подключен: {acc.email_address}"
+
+================================================================================
+# FILE: services/email_service.py
+
+from collections import Counter
+from datetime import datetime, timezone
+import logging
+
+from app.db.init_db import ensure_schema
+from app.db.session import AsyncSessionMaker
+from app.db.repositories.user_repository import UserRepository
+from app.db.repositories.mail_account_repository import MailAccountRepository
+from app.db.repositories.email_repository import EmailRepository
+from app.db.repositories.folder_repository import FolderRepository
+
+from app.models.email import Email
+
+from app.mail.imap_client import fetch_last_n_gmail_preview, fetch_last_n_gmail_preview_debug
+from app.mail.parser import parse_email_preview
+
+from app.ai.client import YandexGPTClient
+from app.ai.prompts import SYSTEM_FOLDERS
+
+logger = logging.getLogger("ai")
+
+def _truncate_vk(text: str, limit: int = 3500) -> str:
+    if len(text) <= limit:
+        return text
+    return text[: limit - 50] + "\n...\n(обрезано)"
+
+def guess_folder(subject: str | None, from_email: str | None) -> str:
+    s = (subject or "").lower()
+    f = (from_email or "").lower()
+
+    if any(x in s for x in ["стаж", "intern", "internship", "vacanc", "job", "карьер"]):
+        return "Стажировки"
+    if any(x in s for x in ["дедлайн", "deadline", "срок", "сдать", "экзамен"]):
+        return "Важное"
+    if any(x in f for x in ["no-reply", "noreply"]) or any(x in s for x in ["unsubscribe", "подписк", "рассыл"]):
+        return "Рассылки"
+    if any(x in s for x in ["лекц", "семинар", "пара", "курс", "учеб", "зачет", "зачёт"]):
+        return "Учёба"
+    return "Несортированное"
+
+
+class EmailService:
+    def __init__(self) -> None:
+        self.user_repo = UserRepository()
+        self.mail_repo = MailAccountRepository()
+        self.email_repo = EmailRepository()
+        self.folder_repo = FolderRepository()
+
+    async def fetch_and_store_last(self, vk_user_id: int, n: int = 25) -> tuple[int, str]:
+        await ensure_schema()
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return 0, "NO_USER"
+
+                acc = await self.mail_repo.get_active_gmail(session, user.id)
+                if not acc:
+                    return 0, "NO_MAIL"
+
+                folders = await self.folder_repo.ensure_system_folders(session, user.id)
+
+                try:
+                    raw_list = await fetch_last_n_gmail_preview(acc.email_address, acc.app_password, n=n)
+                except TimeoutError:
+                    return 0, "IMAP_TIMEOUT"
+                except Exception:
+                    return 0, "IMAP_ERROR"
+
+                saved = 0
+                for uid, header_bytes, text_bytes in raw_list:
+                    if await self.email_repo.exists_by_uid(session, acc.id, uid):
+                        continue
+
+                    parsed = parse_email_preview(header_bytes, text_bytes)
+
+                    folder_name = guess_folder(parsed["subject"], parsed["from_email"])
+                    folder_id = folders[folder_name].id
+
+                    email = Email(
+                        user_id=user.id,
+                        mail_account_id=acc.id,
+                        imap_uid=uid,
+                        message_id=parsed["message_id"],
+                        subject=parsed["subject"],
+                        from_email=parsed["from_email"],
+                        received_at=parsed["received_at"],
+                        body_text=parsed["body_text"],
+                        has_attachments=False,
+                        folder_id=folder_id,
+                    )
+                    await self.email_repo.save(session, email)
+                    saved += 1
+
+                return saved, "OK"
+
+    async def ai_classify_last_emails(self, vk_user_id: int, limit: int = 5) -> tuple[bool, str]:
+        await ensure_schema()
+        ya = YandexGPTClient()
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return False, "Сначала напиши «Начать»."
+
+                folders = await self.folder_repo.ensure_system_folders(session, user.id)
+                emails = await self.email_repo.list_last(session, user.id, limit=limit)
+                if not emails:
+                    return True, "Писем пока нет. Нажми «Проверить почту»."
+
+                cnt = Counter()
+
+                for e in emails:
+                    received_str = e.received_at.isoformat() if e.received_at else None
+
+                    try:
+                        result = await ya.classify_email(
+                            subject=e.subject,
+                            from_email=e.from_email,
+                            received_at=received_str,
+                            body_snippet=e.body_text,
+                            user_folders=[],  # позже добавим кастомные
+                            user_rules=[],
+                        )
+                    except Exception as ex:
+                        logger.exception("YandexGPT failed for email_id=%s: %s", e.id, ex)
+                        folder_name = guess_folder(e.subject, e.from_email)
+                        e.folder_id = folders[folder_name].id
+                        cnt[folder_name] += 1
+                        continue
+
+                    e.ai_summary = (result.summary or "")[:2000]
+                    e.ai_importance = result.importance
+                    e.ai_category = (result.category or "")[:64]
+                    e.ai_confidence = None
+                    e.ai_classified_at = datetime.now(timezone.utc)
+
+                    folder_name = result.suggested_folder if result.suggested_folder in SYSTEM_FOLDERS else "Несортированное"
+                    e.folder_id = folders[folder_name].id
+                    cnt[folder_name] += 1
+
+                parts = [f"AI-разбор выполнен (последние {len(emails)} писем):"]
+                for name in SYSTEM_FOLDERS:
+                    parts.append(f"- {name}: {cnt.get(name, 0)}")
+                return True, "\n".join(parts)
+
+    async def build_digest_text(self, vk_user_id: int, limit: int = 10) -> tuple[bool, str]:
+        await ensure_schema()
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return False, "Сначала напиши «Начать»."
+
+                emails = await self.email_repo.list_last(session, user.id, limit=limit)
+                if not emails:
+                    return True, "Писем пока нет. Нажми «Проверить почту»."
+
+                lines = ["Дайджест (последние письма):"]
+                for e in emails:
+                    frm = e.from_email or "(неизвестно)"
+                    subj = e.subject or "(без темы)"
+                    if e.ai_summary:
+                        lines.append(f"- {frm} | {subj}\n  {e.ai_summary}")
+                    elif e.body_text:
+                        lines.append(f"- {frm} | {subj}\n  {e.body_text[:200]}")
+                    else:
+                        lines.append(f"- {frm} | {subj}")
+
+                return True, _truncate_vk("\n".join(lines))
+
+    async def debug_list_inbox_headers(self, vk_user_id: int, n: int = 50) -> tuple[bool, str]:
+        await ensure_schema()
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return False, "Сначала напиши «Начать»."
+
+                acc = await self.mail_repo.get_active_gmail(session, user.id)
+                if not acc:
+                    return False, "Сначала подключи Gmail."
+
+                raw_list = await fetch_last_n_gmail_preview_debug(acc.email_address, acc.app_password, n=n)
+
+        lines = [f"DEBUG INBOX (последние {len(raw_list)}):"]
+        for uid, header_bytes, text_bytes in raw_list:
+            parsed = parse_email_preview(header_bytes, text_bytes)
+            subj = parsed["subject"] or "(без темы)"
+            frm = parsed["from_email"] or "(неизвестно)"
+            lines.append(f"- {frm} | {subj}")
+
+        return True, _truncate_vk("\n".join(lines))
+
+================================================================================
+# FILE: services/folder_view_service.py
+
+from sqlalchemy import select, func
+
+from app.db.init_db import ensure_schema
+from app.db.session import AsyncSessionMaker
+from app.db.repositories.user_repository import UserRepository
+from app.db.repositories.folder_repository import FolderRepository
+from app.models.email import Email
+
+
+class FolderViewService:
+    def __init__(self) -> None:
+        self.user_repo = UserRepository()
+        self.folder_repo = FolderRepository()
+
+    async def last_emails_in_folder(self, vk_user_id: int, folder_name: str, limit: int = 5) -> str:
+        await ensure_schema()
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+                if not user:
+                    return "Сначала напиши «Начать»."
+
+                folders = await self.folder_repo.ensure_system_folders(session, user.id)
+                folder = folders.get(folder_name)
+                if not folder:
+                    return "Папка не найдена."
+
+                total_res = await session.execute(
+                    select(func.count(Email.id)).where(
+                        Email.user_id == user.id,
+                        Email.folder_id == folder.id,
+                    )
+                )
+                total = int(total_res.scalar_one())
+
+                res = await session.execute(
+                    select(Email)
+                    .where(Email.user_id == user.id, Email.folder_id == folder.id)
+                    .order_by(Email.id.desc())
+                    .limit(limit)
+                )
+                emails = list(res.scalars().all())
+
+                if total == 0:
+                    return f"Папка «{folder_name}»: писем пока нет."
+
+                lines = [f"Папка: {folder_name} | всего писем: {total} | показываю последние {min(limit, total)}:"]
+                for e in emails:
+                    subj = e.subject or "(без темы)"
+                    frm = e.from_email or "(неизвестно)"
+                    lines.append(f"- {frm} | {subj}")
+                return "\n".join(lines)
+
+================================================================================
+# FILE: services/mail_service.py
+
+from app.db.init_db import ensure_schema
+from app.db.session import AsyncSessionMaker
+from app.db.repositories.user_repository import UserRepository
+from app.db.repositories.mail_account_repository import MailAccountRepository
+from app.mail.imap_client import check_gmail_imap
+
+
+class MailService:
+    def __init__(self) -> None:
+        self.user_repo = UserRepository()
+        self.mail_repo = MailAccountRepository()
+
+    async def connect_gmail(self, vk_user_id: int, email_address: str, app_password: str) -> tuple[bool, str]:
+        await ensure_schema()
+
+        email_address = email_address.strip()
+        app_password = app_password.replace(" ", "").strip()  # Gmail app password часто с пробелами
+
+        ok, code = await check_gmail_imap(email_address, app_password)
+        if not ok:
+            return False, code
+
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await self.user_repo.get_or_create(session, vk_user_id)
+                await self.mail_repo.upsert_gmail(session, user.id, email_address, app_password)
+
+        return True, "OK"
+
+================================================================================
+# FILE: services/user_service.py
+
+from app.db.session import AsyncSessionMaker
+from app.db.repositories.user_repository import UserRepository
+
+class UserService:
+    def __init__(self) -> None:
+        self.repo = UserRepository()
+
+    async def ensure_user(self, vk_user_id: int):
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                return await self.repo.get_or_create(session, vk_user_id)

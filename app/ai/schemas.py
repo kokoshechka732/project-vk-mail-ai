@@ -1,13 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import Literal, Optional
-
+from typing import Literal, Optional, List
 
 Importance = Literal["low", "medium", "high"]
 
 
-class DeepSeekEmailClassification(BaseModel):
-    importance: Importance = Field(..., description="low/medium/high")
-    category: str = Field(..., description="short category label")
-    summary: str = Field(..., description="1-3 sentences, short")
-    suggested_folder: str = Field(..., description="one of allowed folders")
-    confidence: float = Field(..., ge=0.0, le=1.0)
+class AIEmailClassification(BaseModel):
+    category: str = Field(
+        ...,
+        description="academic|work|events|finance|services|spam|personal|other OR custom folder name",
+    )
+    importance: Importance
+    summary: str  # 1 sentence <=150 chars (мы дополнительно обрежем)
+    actions: List[str] = Field(default_factory=list)
+    deadline: Optional[str] = None  # YYYY-MM-DD or null
+    suggested_folder: str

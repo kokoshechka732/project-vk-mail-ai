@@ -1,6 +1,7 @@
 from app.db.session import AsyncSessionMaker
 from app.db.repositories.user_repository import UserRepository
 
+
 class UserService:
     def __init__(self) -> None:
         self.repo = UserRepository()

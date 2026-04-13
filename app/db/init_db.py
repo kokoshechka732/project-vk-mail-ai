@@ -1,8 +1,7 @@
 import asyncio
-
 from app.db.session import engine
 from app.db.base import Base
-import app.models 
+import app.models  # noqa: F401
 
 _schema_ready = False
 _lock: asyncio.Lock | None = None
@@ -27,10 +26,8 @@ async def ensure_schema() -> None:
     async with _get_lock():
         if _schema_ready:
             return
-
         print("DB: creating tables (create_all)...")
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-
         _schema_ready = True
         print("DB: schema ready")

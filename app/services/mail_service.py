@@ -12,7 +12,6 @@ class MailService:
 
     async def connect_gmail(self, vk_user_id: int, email_address: str, app_password: str) -> tuple[bool, str]:
         await ensure_schema()
-
         email_address = email_address.strip()
         app_password = app_password.replace(" ", "").strip()  # Gmail app password часто с пробелами
 

@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
 
+
 class UserRepository:
     async def get_by_vk_id(self, session: AsyncSession, vk_user_id: int) -> User | None:
         res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
@@ -19,7 +20,6 @@ class UserRepository:
         user = await self.get_by_vk_id(session, vk_user_id)
         if user:
             return user
-
         try:
             return await self.create(session, vk_user_id)
         except IntegrityError:
