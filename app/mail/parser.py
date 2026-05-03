@@ -2,6 +2,7 @@ from email import message_from_bytes
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
 
+
 def _decode_header(value: str | None) -> str | None:
     if not value:
         return None
@@ -15,6 +16,7 @@ def _decode_header(value: str | None) -> str | None:
     out = out.strip()
     return out or None
 
+
 def _decode_text_bytes(b: bytes) -> str:
     if not b:
         return ""
@@ -22,6 +24,7 @@ def _decode_text_bytes(b: bytes) -> str:
         return b.decode("utf-8", errors="replace")
     except Exception:
         return b.decode("latin-1", errors="replace")
+
 
 def _make_preview(text: str, max_lines: int = 20, max_chars: int = 1200) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
@@ -33,12 +36,11 @@ def _make_preview(text: str, max_lines: int = 20, max_chars: int = 1200) -> str:
         preview = preview[:max_chars].rstrip() + "..."
     return preview
 
+
 def parse_email_preview(header_bytes: bytes, text_snippet_bytes: bytes) -> dict:
     msg = message_from_bytes(header_bytes or b"")
-
     subject = _decode_header(msg.get("Subject"))
     message_id = msg.get("Message-ID")
-
     _name, from_addr = parseaddr(msg.get("From", ""))
     from_email = from_addr or None
 

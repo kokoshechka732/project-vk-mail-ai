@@ -2,89 +2,70 @@ import json
 import re
 import logging
 from typing import Optional, List, Dict
-
 import httpx
-
 from app.core.settings import settings
 from app.ai.schemas import AIEmailClassification
 from app.ai.prompts import build_messages
 
 logger = logging.getLogger("ai")
 
-_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
-
-
-def _extract_json(text: str) -> str:
-    text = (text or "").strip()
-    m = _CODE_FENCE_RE.search(text)
-    if m:
-        return m.group(1).strip()
-    return text
-
-
-class YandexGPTClient:
-    def __init__(self) -> None:
-        if not settings.YANDEX_API_KEY.strip():
-            raise RuntimeError("YANDEX_API_KEY is not set in .env")
-        if not settings.YANDEX_FOLDER_ID.strip():
-            raise RuntimeError("YANDEX_FOLDER_ID is not set in .env")
-
-        self.api_key = settings.YANDEX_API_KEY.strip()
-        self.folder_id = settings.YANDEX_FOLDER_ID.strip()
-        self.model_name = settings.YANDEX_MODEL_NAME.strip()
-        self.model_version = settings.YANDEX_MODEL_VERSION.strip()
-        self.endpoint = settings.YANDEX_ENDPOINT.strip()
-        self.verify_ssl = bool(settings.YANDEX_VERIFY_SSL)
-
-    @property
-    def model_uri(self) -> str:
-        return f"gpt://{self.folder_id}/{self.model_name}/{self.model_version}"
+class AIClient:
+    def __init__(self):
+        self.provider = settings.AI_PROVIDER.lower()
+        # verify=False для локальной LLM часто бывает нужно, для API - по настройкам
+        verify = True if self.provider == "pollinations" else False
+        self.client = httpx.AsyncClient(timeout=httpx.Timeout(60.0), verify=verify)
 
     async def classify_email(
-        self,
-        subject: Optional[str],
-        from_email: Optional[str],
-        received_at: Optional[str],
-        body_snippet: Optional[str],
+        self, subject: Optional[str], from_email: Optional[str],
+        received_at: Optional[str], body_snippet: Optional[str],
         user_folders: List[str] | None = None,
-        user_rules: List[Dict[str, str]] | None = None,
+        user_rules: List[Dict[str, str]] | None = None
     ) -> AIEmailClassification:
-        messages = build_messages(
-            subject=subject,
-            from_email=from_email,
-            received_at=received_at,
-            body_snippet=body_snippet,
-            user_folders=user_folders or [],
-            user_rules=user_rules or [],
-        )
+        
+        # Формируем промпт
+        msgs = build_messages(subject, from_email, received_at, body_snippet, user_folders or [], user_rules or [])
+        oa_messages = [{"role": m["role"], "content": m.get("text", "")} for m in msgs]
 
-        headers = {
-            "Authorization": f"Api-Key {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        # Настраиваем запрос в зависимости от провайдера
+        if self.provider == "local":
+            url = settings.LOCAL_LLM_URL
+            model = settings.LOCAL_LLM_MODEL
+            headers = {"Content-Type": "application/json"}
+        else:
+            url = f"{settings.POLLINATIONS_BASE_URL}{settings.POLLINATIONS_CHAT_ENDPOINT}"
+            model = settings.POLLINATIONS_MODEL
+            headers = {"Content-Type": "application/json"}
+            if settings.POLLINATIONS_API_KEY:
+                headers["Authorization"] = f"Bearer {settings.POLLINATIONS_API_KEY}"
 
         body = {
-            "modelUri": self.model_uri,
-            "completionOptions": {"stream": False, "temperature": 0, "maxTokens": 800},
-            "messages": messages,
+            "model": model,
+            "messages": oa_messages,
+            "temperature": 0.1, # Низкая температура для стабильного JSON
+            "max_tokens": 1000
         }
 
-        async with httpx.AsyncClient(timeout=45.0, verify=self.verify_ssl) as client:
-            r = await client.post(self.endpoint, headers=headers, json=body)
+        try:
+            r = await self.client.post(url, headers=headers, json=body)
+            r.raise_for_status()
+            content = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            logger.error(f"AI Request failed: {e}")
+            raise
 
-        if r.status_code >= 400:
-            req_id = r.headers.get("x-request-id")
-            logger.error(
-                "YandexGPT HTTP %s request_id=%s modelUri=%s response=%s",
-                r.status_code,
-                req_id,
-                self.model_uri,
-                r.text,
-            )
-            raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+        # Парсинг JSON из ответа LLM (иногда они обертывают его в ```json ... ```)
+        raw_text = content.strip()
+        # Убираем Markdown-обертку, если есть
+        if "```" in raw_text:
+            match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw_text)
+            if match:
+                raw_text = match.group(1).strip()
+        
+        try:
+            obj = json.loads(raw_text)
+        except json.JSONDecodeError:
+            logger.error(f"Failed to parse JSON: {raw_text[:200]}")
+            raise RuntimeError("Некорректный ответ от нейросети")
 
-        data = r.json()
-        text = data["result"]["alternatives"][0]["message"]["text"]
-        payload = _extract_json(text)
-        obj = json.loads(payload)
         return AIEmailClassification.model_validate(obj)

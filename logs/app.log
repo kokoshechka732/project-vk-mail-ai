@@ -838,3 +838,2393 @@ Traceback (most recent call last):
   File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
     raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
 RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:01:46,192 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 01:01:46,193 | ERROR | ai | YandexGPT HTTP 403 request_id=fca1f8cc-2ca5-4b6d-a4f4-f97dbd3e95d5 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:01:46,194 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:06:49,201 | INFO | httpx | HTTP Request: POST https://llm.api.cloud.yandex.net/foundationModels/v1/completion "HTTP/1.1 403 Forbidden"
+2026-04-14 01:06:49,203 | ERROR | ai | YandexGPT HTTP 403 request_id=5add2a2f-3d9f-4b9f-83ff-2fc9d60e5299 modelUri=gpt://b1gbn0s2kpoi1fhju50c/yandexgpt-lite/latest response={"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 01:06:49,204 | ERROR | email | YandexGPT failed for email_id=47: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 266, in _ai_classify_and_assign
+    result = await ya.classify_email(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\ai\client.py", line 84, in classify_email
+    raise RuntimeError(f"YandexGPT HTTP {r.status_code}: {r.text}")
+RuntimeError: YandexGPT HTTP 403: {"error":{"grpcCode":7,"httpCode":403,"message":"Permission to [resource-manager.folder b1gbn0s2kpoi1fhju50c, resource-manager.cloud b1gesnrh2t3cfl81rhp3, organization-manager.organization bpfdr4n59ivchscj2lei] denied","httpStatus":"Forbidden","details":[]}}
+2026-04-14 11:10:45,193 | INFO | app | Bot starting...
+2026-04-14 11:10:45,194 | INFO | vkbottle | Loop will be run forever
+2026-04-14 11:10:45,198 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-14 11:13:58,403 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-14 11:15:21,334 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 870, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 855, in create_connection
+    sock.connect(sa)
+    ~~~~~~~~~~~~^^^^
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+2026-04-14 11:20:25,469 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-14 11:21:44,404 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 870, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 855, in create_connection
+    sock.connect(sa)
+    ~~~~~~~~~~~~^^^^
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+2026-04-14 11:28:07,019 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 870, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 855, in create_connection
+    sock.connect(sa)
+    ~~~~~~~~~~~~^^^^
+TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+2026-04-16 16:42:53,051 | INFO | app | Bot starting...
+2026-04-16 16:42:53,052 | INFO | vkbottle | Loop will be run forever
+2026-04-16 16:42:53,054 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 16:43:20,058 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-16 16:43:31,519 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-16 16:43:37,050 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-16 16:43:42,594 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-16 22:16:13,812 | INFO | app | Bot starting...
+2026-04-16 22:16:13,812 | INFO | vkbottle | Loop will be run forever
+2026-04-16 22:16:13,813 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 22:16:18,088 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-16 22:16:22,202 | ERROR | asyncio | Task exception was never retrieved
+future: <Task finished name='Task-10' coro=<EmailService.poll_new_emails_forever() done, defined at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:370> exception=ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)>
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 371, in poll_new_emails_forever
+    await ensure_schema()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\init_db.py", line 30, in ensure_schema
+    async with engine.begin() as conn:
+               ~~~~~~~~~~~~^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 214, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\engine.py", line 1068, in begin
+    async with conn:
+               ^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\engine.py", line 275, in start
+    await greenlet_spawn(self.sync_engine.connect)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+2026-04-16 22:16:22,413 | ERROR | vkbottle | [WinError 1225] The remote computer refused the network connection
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 100, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+2026-04-16 22:16:32,194 | ERROR | vkbottle | [WinError 1225] The remote computer refused the network connection
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 100, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+2026-04-16 22:16:37,886 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-16 22:16:38,147 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002006B7EBA10>
+2026-04-16 22:17:34,414 | INFO | app | Bot starting...
+2026-04-16 22:17:34,415 | INFO | vkbottle | Loop will be run forever
+2026-04-16 22:17:34,416 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 22:17:40,541 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-16 22:18:06,517 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-16 22:18:22,812 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-16 22:18:23,085 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001C6E8F7BA10>
+2026-04-16 22:18:23,085 | ERROR | asyncio | Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000001C6E8FF54F0>, 607268.1534476)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000001C6E8F7B620>
+2026-04-16 22:18:23,086 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-16 22:18:30,197 | INFO | app | Bot starting...
+2026-04-16 22:18:30,197 | INFO | vkbottle | Loop will be run forever
+2026-04-16 22:18:30,199 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 22:18:33,559 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-16 22:20:28,719 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-16 22:20:28,984 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000019D731FBA10>
+2026-04-16 22:20:28,985 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-16 22:20:35,944 | INFO | app | Bot starting...
+2026-04-16 22:20:35,945 | INFO | vkbottle | Loop will be run forever
+2026-04-16 22:20:35,946 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 22:20:42,154 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-16 22:21:11,331 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-16 22:21:11,597 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002E21BDFBA10>
+2026-04-16 22:21:11,598 | ERROR | asyncio | Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000002E21BCFF580>, 607428.7910916)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000002E21BDFB620>
+2026-04-16 22:21:11,598 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-16 22:21:18,141 | INFO | app | Bot starting...
+2026-04-16 22:21:18,141 | INFO | vkbottle | Loop will be run forever
+2026-04-16 22:21:18,143 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-16 22:21:21,422 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-17 13:27:18,512 | INFO | app | Bot starting...
+2026-04-17 13:27:18,513 | INFO | vkbottle | Loop will be run forever
+2026-04-17 13:27:18,515 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-17 13:27:32,028 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-17 13:30:27,985 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-17 13:47:44,794 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+2026-04-17 13:50:01,224 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:01,338 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:01,545 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:01,849 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:02,262 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:02,773 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:03,390 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:04,095 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:04,905 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:05,818 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:06,821 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:07,934 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:09,141 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:10,449 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:11,852 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:13,366 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:14,973 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:16,680 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:18,486 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:20,404 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:22,409 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:24,528 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:26,736 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:29,049 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:31,458 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:33,960 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:36,573 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:39,290 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:42,093 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:45,009 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:48,024 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:51,128 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:54,332 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:50:57,639 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:01,047 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:04,558 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:08,176 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:11,880 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:15,690 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:19,605 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:23,610 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:27,714 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:31,928 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:36,246 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:40,651 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:45,167 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:49,773 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:54,481 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:51:59,297 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:04,211 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:09,223 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:14,331 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:19,540 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:24,849 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:30,262 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:35,772 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:41,379 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:44,917 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+2026-04-17 13:52:47,094 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:52,900 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:52:58,804 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:04,819 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:10,823 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:16,841 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:22,845 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:28,859 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:34,862 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:40,874 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:46,880 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:52,884 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:53:58,896 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:04,900 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:10,912 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:16,919 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:22,925 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:28,934 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:34,937 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:40,940 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:46,943 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:52,946 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:54:58,963 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:04,967 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:10,980 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:16,985 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:23,001 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:29,007 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:35,018 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:41,032 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:47,040 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:53,054 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:55:59,062 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:05,077 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:11,089 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:17,103 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:23,107 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:29,120 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:35,129 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:41,146 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:47,152 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:53,169 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:56:59,186 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:05,189 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:11,204 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:17,214 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:23,218 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:29,228 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:35,243 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:41,255 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:44,931 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 391, in _poll_once
+    raw_list = await fetch_since_uid_gmail_preview(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 127, in fetch_since_uid_gmail_preview
+    return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\mail\imap_client.py", line 105, in _fetch_since_uid_sync
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1641, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1654, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 1644, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\imaplib.py", line 307, in _create_socket
+    return socket.create_connection(address, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+2026-04-17 13:57:47,266 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:53,277 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:57:59,290 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:58:05,293 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:58:11,297 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-17 13:58:53,580 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-17 13:58:53,886 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002BFB842FA10>
+2026-04-17 13:58:53,887 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:378> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-27 20:44:54,475 | INFO | vkbottle | Loop will be run forever
+2026-04-27 20:44:54,479 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-27 20:47:09,474 | ERROR | vkbottle | 'coroutine' object has no attribute 'id'
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 74, in router
+    _, d = await email_service.build_digest_text(vk_id, limit=5); await m.answer(d, keyboard=main_menu_json()); return
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 156, in build_digest_text
+    emails = await self.email_repo.list_last(session, await self.user_repo.get_by_vk_id(session, vk_user_id).id, limit)
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'coroutine' object has no attribute 'id'
+2026-04-27 20:47:09,502 | WARNING | vkbottle | RuntimeWarning: coroutine 'UserRepository.get_by_vk_id' was never awaited
+2026-04-27 20:47:09,504 | INFO | reminder | Reminder service started (every 3600s)
+2026-04-27 20:47:09,505 | ERROR | reminder | Reminder check failed
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py", line 31, in _loop
+    await self._check_and_send(api)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py", line 39, in _check_and_send
+    users = await session.execute(select(self.user_repo.model))
+                                         ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'UserRepository' object has no attribute 'model'
+2026-04-27 20:47:14,977 | ERROR | vkbottle | 'coroutine' object has no attribute 'id'
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 74, in router
+    _, d = await email_service.build_digest_text(vk_id, limit=5); await m.answer(d, keyboard=main_menu_json()); return
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 156, in build_digest_text
+    emails = await self.email_repo.list_last(session, await self.user_repo.get_by_vk_id(session, vk_user_id).id, limit)
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'coroutine' object has no attribute 'id'
+2026-04-27 20:47:18,252 | ERROR | vkbottle | 'coroutine' object has no attribute 'id'
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 74, in router
+    _, d = await email_service.build_digest_text(vk_id, limit=5); await m.answer(d, keyboard=main_menu_json()); return
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 156, in build_digest_text
+    emails = await self.email_repo.list_last(session, await self.user_repo.get_by_vk_id(session, vk_user_id).id, limit)
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'coroutine' object has no attribute 'id'
+2026-04-27 20:55:32,035 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-27 20:55:32,316 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-92' coro=<ReminderService._loop() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py:34> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-27 20:55:32,317 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-91' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:173> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-27 20:55:32,317 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-99' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:173> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-27 20:55:32,317 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-105' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:173> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-27 20:58:56,270 | INFO | vkbottle | Loop will be run forever
+2026-04-27 20:58:56,271 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-27 20:59:37,461 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 20:59:45,073 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 20:59:50,676 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 20:59:56,216 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 21:00:01,119 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 21:00:07,768 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 21:00:12,800 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 21:00:18,652 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-27 21:10:47,874 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-27 21:10:55,315 | INFO | vkbottle | Loop will be run forever
+2026-04-27 21:10:55,317 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-27 21:11:04,849 | INFO | app | Background polling started.
+2026-04-27 21:11:04,992 | ERROR | asyncio | Task exception was never retrieved
+future: <Task finished name='Task-10' coro=<EmailService.poll_new_emails_forever() done, defined at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:169> exception=NameError("name 'settings' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 172, in poll_new_emails_forever
+    reminder_service.start(api, interval_sec=settings.REMINDER_CHECK_INTERVAL_SEC)
+                                             ^^^^^^^^
+NameError: name 'settings' is not defined
+2026-04-27 21:11:14,076 | ERROR | vkbottle | folders_menu_json() got an unexpected keyword argument 'folder_names'
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 103, in router
+    await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names=folder_names, can_create_custom=can_create_custom)); return
+                                                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: folders_menu_json() got an unexpected keyword argument 'folder_names'
+2026-04-27 21:11:16,688 | ERROR | vkbottle | (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: column emails.ai_deadline does not exist
+[SQL: SELECT emails.id, emails.user_id, emails.mail_account_id, emails.folder_id, emails.imap_uid, emails.message_id, emails.subject, emails.from_email, emails.received_at, emails.body_text, emails.has_attachments, emails.ai_summary, emails.ai_importance, emails.ai_deadline, emails.ai_actions, emails.ai_classified_at, emails.last_reminder_at, emails.created_at 
+FROM emails 
+WHERE emails.user_id = $1::INTEGER ORDER BY emails.id DESC 
+ LIMIT $2::INTEGER]
+[parameters: (1, 5)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 526, in _prepare_and_execute
+    prepared_stmt, attributes = await adapt_connection._prepare(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        operation, self._invalidate_schema_cache_asof
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 773, in _prepare
+    prepared_stmt = await self._connection.prepare(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        operation, name=self._prepared_statement_name_func()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 638, in prepare
+    return await self._prepare(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 657, in _prepare
+    stmt = await self._get_statement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 443, in _get_statement
+    statement = await self._protocol.prepare(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
+asyncpg.exceptions.UndefinedColumnError: column emails.ai_deadline does not exist
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.UndefinedColumnError'>: column emails.ai_deadline does not exist
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 96, in router
+    _, digest_text = await email_service.build_digest_text(vk_user_id, limit=5)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 161, in build_digest_text
+    emails = await self.email_repo.list_last(session, user.id, limit)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\email_repository.py", line 23, in list_last
+    res = await session.execute(
+          ^^^^^^^^^^^^^^^^^^^^^^
+        select(Email).where(Email.user_id == user_id).order_by(Email.id.desc()).limit(limit)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 585, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 563, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 513, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: column emails.ai_deadline does not exist
+[SQL: SELECT emails.id, emails.user_id, emails.mail_account_id, emails.folder_id, emails.imap_uid, emails.message_id, emails.subject, emails.from_email, emails.received_at, emails.body_text, emails.has_attachments, emails.ai_summary, emails.ai_importance, emails.ai_deadline, emails.ai_actions, emails.ai_classified_at, emails.last_reminder_at, emails.created_at 
+FROM emails 
+WHERE emails.user_id = $1::INTEGER ORDER BY emails.id DESC 
+ LIMIT $2::INTEGER]
+[parameters: (1, 5)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-27 21:18:28,196 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-04-27 21:18:38,671 | INFO | app | Bot starting...
+2026-04-27 21:18:38,671 | INFO | vkbottle | Loop will be run forever
+2026-04-27 21:18:38,672 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-27 21:18:47,747 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-27 21:18:47,847 | INFO | reminder | Reminder service started (every 3600s)
+2026-04-27 21:18:47,863 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 21:19:02,008 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 21:19:42,238 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 21:19:55,037 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 21:20:53,702 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 21:23:47,869 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:27:34,441 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-27 22:27:34,447 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:32:34,455 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:37:34,472 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:42:34,485 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:47:34,506 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:52:34,519 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 22:57:34,539 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-27 23:02:34,552 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 05:06:31,652 | ERROR | vkbottle | Unable to make request to BotPolling, retrying...
+2026-04-28 05:06:31,667 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 11:52:04,002 | INFO | app | Bot starting...
+2026-04-28 11:52:04,003 | INFO | vkbottle | Loop will be run forever
+2026-04-28 11:52:04,006 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-04-28 11:52:25,687 | INFO | app | Background polling task started (every 5 minutes).
+2026-04-28 11:52:25,848 | INFO | reminder | Reminder service started (every 3600s)
+2026-04-28 11:52:25,883 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 11:52:26,394 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 11:57:25,946 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 12:02:25,967 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-04-28 12:07:54,084 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-05-03 16:40:22,336 | INFO | app | Bot starting...
+2026-05-03 16:40:22,337 | INFO | vkbottle | Loop will be run forever
+2026-05-03 16:40:22,340 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 16:41:59,803 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 16:42:03,903 | ERROR | asyncio | Task exception was never retrieved
+future: <Task finished name='Task-10' coro=<EmailService.poll_new_emails_forever() done, defined at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:298> exception=ConnectionRefusedError(22, 'Удаленный компьютер отклонил это сетевое подключение', None, 1225, None)>
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 299, in poll_new_emails_forever
+    await ensure_schema()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\init_db.py", line 30, in ensure_schema
+    async with engine.begin() as conn:
+               ~~~~~~~~~~~~^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 214, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\engine.py", line 1068, in begin
+    async with conn:
+               ^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\engine.py", line 275, in start
+    await greenlet_spawn(self.sync_engine.connect)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+2026-05-03 16:42:04,134 | ERROR | vkbottle | [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 86, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+2026-05-03 16:42:15,812 | ERROR | vkbottle | [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 86, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+2026-05-03 16:42:25,982 | ERROR | vkbottle | [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 86, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+2026-05-03 16:42:45,036 | ERROR | vkbottle | [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 86, in router
+    await user_service.ensure_user(vk_user_id)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\user_service.py", line 12, in ensure_user
+    return await self.repo.get_or_create(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 20, in get_or_create
+    user = await self.get_by_vk_id(session, vk_user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\db\repositories\user_repository.py", line 10, in get_by_vk_id
+    res = await session.execute(select(User).where(User.vk_user_id == vk_user_id))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\me\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] Удаленный компьютер отклонил это сетевое подключение
+2026-05-03 16:43:43,003 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-05-03 16:43:43,318 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001FB5A604C20>
+2026-05-03 16:43:50,453 | INFO | app | Bot starting...
+2026-05-03 16:43:50,454 | INFO | vkbottle | Loop will be run forever
+2026-05-03 16:43:50,455 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 16:44:03,809 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 16:44:03,922 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 16:44:03,983 | ERROR | email | Polling failed for vk_user_id=412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 321, in _poll_once
+    decrypt(acc.app_password),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-05-03 16:44:10,594 | ERROR | email | IMAP error in sync_new
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 105, in sync_new
+    acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 30, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+2026-05-03 16:45:03,875 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-05-03 16:45:04,154 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000023861600C20>
+2026-05-03 16:45:04,154 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:308> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 16:45:04,155 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-15' coro=<ReminderService._loop() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py:32> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:28:24,534 | INFO | app | Bot starting...
+2026-05-03 17:28:25,575 | INFO | vkbottle | Loop will be run forever
+2026-05-03 17:28:25,577 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 17:28:58,721 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 17:28:58,828 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 17:28:58,922 | ERROR | email | Poll error for 412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 275, in _poll_once
+    acc.email_address, decrypt(acc.app_password),
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 23, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 12, in _get_cipher
+    raise RuntimeError("❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.")
+RuntimeError: ❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.
+2026-05-03 17:30:09,487 | INFO | app | Bot starting...
+2026-05-03 17:30:10,367 | INFO | vkbottle | Loop will be run forever
+2026-05-03 17:30:10,369 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 17:30:13,148 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 17:30:13,261 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 17:30:13,332 | ERROR | email | Poll error for 412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 275, in _poll_once
+    acc.email_address, decrypt(acc.app_password),
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 23, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 12, in _get_cipher
+    raise RuntimeError("❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.")
+RuntimeError: ❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.
+2026-05-03 17:30:35,767 | ERROR | vkbottle | Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 161, in router
+    await message.answer("Ок. Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
+                                                                                        ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\keyboards.py", line 15, in cancel_menu_json
+    return Keyboard(one_one=False).add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE).get_json()
+           ~~~~~~~~^^^^^^^^^^^^^^^
+TypeError: Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+2026-05-03 17:30:55,197 | ERROR | vkbottle | Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 172, in router
+    await message.answer("Похоже, это не email. Введи Gmail адрес ещё раз:", keyboard=cancel_menu_json())
+                                                                                      ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\keyboards.py", line 15, in cancel_menu_json
+    return Keyboard(one_one=False).add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE).get_json()
+           ~~~~~~~~^^^^^^^^^^^^^^^
+TypeError: Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+2026-05-03 17:35:13,350 | ERROR | email | Poll error for 412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 275, in _poll_once
+    acc.email_address, decrypt(acc.app_password),
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 23, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 12, in _get_cipher
+    raise RuntimeError("❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.")
+RuntimeError: ❌ Не найден FERNET_KEY в .env. Сгенерируйте ключ и добавьте его.
+2026-05-03 17:38:24,582 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-05-03 17:38:24,866 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001CC1ABCC830>
+2026-05-03 17:38:24,867 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-16' coro=<ReminderService._loop() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py:32> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:38:24,868 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:263> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:38:32,379 | INFO | app | Bot starting...
+2026-05-03 17:38:33,351 | INFO | vkbottle | Loop will be run forever
+2026-05-03 17:38:33,353 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 17:39:01,584 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 17:39:01,696 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 17:39:01,767 | ERROR | email | Poll error for 412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 25, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 275, in _poll_once
+    acc.email_address, decrypt(acc.app_password),
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 27, in decrypt
+    raise ValueError("Неверный ключ шифрования или повреждённые данные в БД.")
+ValueError: Неверный ключ шифрования или повреждённые данные в БД.
+2026-05-03 17:39:12,861 | ERROR | vkbottle | Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\views\abc\message.py", line 78, in handle_event
+    handler_response = await handler.handle(message, **context_variables)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\vkbottle\dispatch\handlers\from_func_handler.py", line 43, in handle
+    return await self.handler(event, **magic_bundle(self.handler, context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\main.py", line 161, in router
+    await message.answer("Ок. Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
+                                                                                        ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\bot\keyboards.py", line 15, in cancel_menu_json
+    return Keyboard(one_one=False).add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE).get_json()
+           ~~~~~~~~^^^^^^^^^^^^^^^
+TypeError: Keyboard.__init__() got an unexpected keyword argument 'one_one'. Did you mean 'one_time'?
+2026-05-03 17:39:27,910 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-05-03 17:39:28,197 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001A95ED9C830>
+2026-05-03 17:39:28,199 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-17' coro=<ReminderService._loop() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py:32> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:39:28,199 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:263> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:39:36,780 | INFO | app | Bot starting...
+2026-05-03 17:39:37,708 | INFO | vkbottle | Loop will be run forever
+2026-05-03 17:39:37,710 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 17:39:44,005 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 17:39:44,109 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 17:39:44,178 | ERROR | email | Poll error for 412847759
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 25, in decrypt
+    return _get_cipher().decrypt(token.encode()).decode()
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 85, in decrypt
+    timestamp, data = Fernet._get_unverified_token_data(token)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\.venv\Lib\site-packages\cryptography\fernet.py", line 119, in _get_unverified_token_data
+    raise InvalidToken
+cryptography.fernet.InvalidToken
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py", line 275, in _poll_once
+    acc.email_address, decrypt(acc.app_password),
+                       ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\me\Desktop\Project\project-vk-mail-ai\app\security\crypto.py", line 27, in decrypt
+    raise ValueError("Неверный ключ шифрования или повреждённые данные в БД.")
+ValueError: Неверный ключ шифрования или повреждённые данные в БД.
+2026-05-03 17:43:13,153 | INFO | vkbottle | Caught keyboard interrupt. Shutting down...
+2026-05-03 17:43:13,448 | ERROR | asyncio | Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001B23CDEC830>
+2026-05-03 17:43:13,449 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-16' coro=<ReminderService._loop() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\reminder_service.py:32> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:43:13,449 | ERROR | asyncio | Task was destroyed but it is pending!
+task: <Task pending name='Task-10' coro=<EmailService.poll_new_emails_forever() running at C:\Users\me\Desktop\Project\project-vk-mail-ai\app\services\email_service.py:263> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-05-03 17:43:21,144 | INFO | app | Bot starting...
+2026-05-03 17:43:22,088 | INFO | vkbottle | Loop will be run forever
+2026-05-03 17:43:22,090 | INFO | vkbottle | Starting BotPolling for <API token_generator=<<class 'vkbottle.api.token_generator.single.SingleTokenGenerator'>>...>
+2026-05-03 17:43:41,030 | INFO | app | Background polling task started (every 5 minutes).
+2026-05-03 17:43:41,138 | INFO | reminder | Reminder service started (every 3600s)
+2026-05-03 17:43:41,147 | WARNING | email | 🔑 Ключ шифрования не совпадает с данными в БД для vk_id=412847759. Отправлю запрос на переподключение.
+2026-05-03 17:44:55,749 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-03 17:44:57,590 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-03 17:44:59,588 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-03 17:45:01,245 | INFO | httpx | HTTP Request: POST https://gen.pollinations.ai/v1/chat/completions "HTTP/1.1 200 OK"

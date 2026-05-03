@@ -26,54 +26,34 @@ async def check_gmail_imap(email: str, password: str) -> tuple[bool, str]:
     return await asyncio.to_thread(_check_gmail_imap_sync, email, password)
 
 
-def _fetch_preview_by_uids_sync(
-    email: str,
-    password: str,
-    uid_list: list[bytes],
-    max_messages: int = 200,
-) -> List[Tuple[int, bytes, bytes]]:
+
+# Замените _fetch_preview_by_uids_sync на:
+def _fetch_preview_by_uids_sync(email: str, password: str, uid_list: list[bytes], max_messages: int = 200) -> List[Tuple[int, bytes, bytes]]:
+    if not uid_list: return []
+    if len(uid_list) > max_messages: uid_list = uid_list[-max_messages:]
+    
     mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
-    mail.login(email, password)
-    mail.select("INBOX")
-
-    if not uid_list:
-        mail.logout()
-        return []
-
-    # ограничим, чтобы не раздувать обработку
-    if len(uid_list) > max_messages:
-        uid_list = uid_list[-max_messages:]
-
-    out: List[Tuple[int, bytes, bytes]] = []
-    fetch_query = "(BODY.PEEK[HEADER.FIELDS (SUBJECT FROM DATE MESSAGE-ID)] BODY.PEEK[TEXT]<0.4096>)"
-
-    for uid_b in uid_list:
-        uid = int(uid_b)
-        try:
-            st, msg_data = mail.uid("fetch", uid_b, fetch_query)
-            if st != "OK" or not msg_data:
-                continue
-            header_bytes: Optional[bytes] = None
-            text_bytes: Optional[bytes] = None
-            for item in msg_data:
-                if not isinstance(item, tuple) or len(item) < 2:
-                    continue
-                meta: bytes = item[0] or b""
-                payload: bytes = item[1] or b""
-                meta_u = meta.upper()
-                if b"HEADER.FIELDS" in meta_u:
-                    header_bytes = payload
-                elif b"BODY[TEXT]" in meta_u:
-                    text_bytes = payload
-            out.append((uid, header_bytes or b"", text_bytes or b""))
-        except (socket.timeout, TimeoutError):
-            continue
-        except Exception:
-            continue
-
-    mail.logout()
+    try:
+        mail.login(email, password)
+        mail.select("INBOX")
+        out: List[Tuple[int, bytes, bytes]] = []
+        
+        # Группируем по 50 для стабильности
+        for i in range(0, len(uid_list), 50):
+            chunk = uid_list[i:i+50]
+            try:
+                st, data = mail.uid("fetch", b" ".join(chunk), "(RFC822.HEADER BODY[TEXT])")
+                if st != "OK" or not data: continue
+                for item in data:
+                    if not isinstance(item, tuple) or len(item) < 2: continue
+                    meta, payload = item
+                    uid = int(meta.split()[0]) if meta else 0
+                    out.append((uid, payload or b"", b""))
+            except Exception: continue
+    finally:
+        try: mail.logout()
+        except: pass
     return out
-
 
 def _fetch_last_n_gmail_preview_sync(email: str, password: str, n: int) -> List[Tuple[int, bytes, bytes]]:
     mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
