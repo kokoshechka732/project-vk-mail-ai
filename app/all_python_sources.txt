@@ -114,7 +114,6 @@ class AIClient:
 import json
 from typing import Optional, List, Dict
 
-# ✅ Синхронизировано с folder_repository.py
 SYSTEM_FOLDERS = ["Важное", "Учёба", "Работа"]
 
 def build_messages(
@@ -128,7 +127,6 @@ def build_messages(
     user_folders = user_folders or []
     user_rules = user_rules or []
     allowed_folders = SYSTEM_FOLDERS + user_folders
-    
     payload = {
         "subject": subject or "",
         "from_email": from_email or "",
@@ -138,34 +136,27 @@ def build_messages(
         "user_custom_folders": user_folders,
         "user_rules": user_rules,
     }
-    
     system = (
         "Ты — AI-ассистент для сортировки и анализа писем студента.\n"
-        "Верни СТРОГО валидный JSON. Без markdown, без комментариев, без пояснений.\n\n"
-        
+        "Верни СТРОГО валидный JSON. Без markdown, без комментариев, без пояснений.\n"
         "ДОСТУПНЫЕ ПАПКИ (suggested_folder обязан быть ОДНОЙ из них):\n"
         "- Системные: \"Важное\", \"Учёба\", \"Работа\"\n"
-        "- Кастомные пользователя: {custom}\n\n"
-        
+        "- Кастомные пользователя: {custom}\n"
         "ПРАВИЛА РАСПРЕДЕЛЕНИЯ:\n"
         "1. \"Учёба\" -> вуз, деканат, расписание, пара, зачёт, экзамен, курсовая, библиотека, LMS, преподаватели.\n"
         "2. \"Работа\" -> вакансии, стажировки, HR, собеседования, карьера, фриланс, бизнес-переписка.\n"
         "3. \"Важное\" -> личная переписка, банки/налоги/госуслуги, срочные уведомления, всё требующее внимания.\n"
         "4. Если письмо точно соответствует описанию/ключевым словам кастомной папки -> используй её.\n"
-        "5. Если не уверен -> \"Важное\".\n\n"
-        
+        "5. Если не уверен -> \"Важное\".\n"
         "КАТЕГОРИЯ (category): academic, work, finance, services, spam, personal, other.\n"
         "ВАЖНОСТЬ (importance): high (срочно/личное/требует действий), medium (информационное), low (рассылка/мусор).\n"
-        "Дедлайн (deadline): YYYY-MM-DD или null. ВНИМАНИЕ: ставь deadline ТОЛЬКО если importance = \"high\". Для medium/low всегда null.\n"
+        "Дедлайн (deadline): строка строго формата YYYY-MM-DD HH:MM (например, 2025-06-15 14:30) или null. ВНИМАНИЕ: ставь deadline ТОЛЬКО если importance = \"high\". Для medium/low всегда null.\n"
         "Действия (actions): конкретные шаги или [].\n"
-        "Саммари (summary): 1 предложение, суть, <=150 символов.\n\n"
-        
+        "Саммари (summary): 1 предложение, суть, <=150 символов.\n"
         "ФОРМАТ ОТВЕТА:\n"
         '{"category":"...","importance":"...","summary":"...","actions":[],"deadline":"... или null","suggested_folder":"..."}'
     ).format(custom="; ".join(user_folders) if user_folders else "(нет)")
-    
     user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False, indent=2)
-    
     return [
         {"role": "system", "text": system},
         {"role": "user", "text": user},
@@ -187,7 +178,7 @@ class AIEmailClassification(BaseModel):
     importance: Importance
     summary: str  # 1 sentence <=150 chars
     actions: List[str] = Field(default_factory=list)
-    deadline: Optional[str] = None  # YYYY-MM-DD or null
+    deadline: Optional[str] = None  # YYYY-MM-DD HH:MM or null (формат строго: 2025-06-15 12:30)
     suggested_folder: str
 
 class FolderIntent(BaseModel):
@@ -243,28 +234,41 @@ class InsecureAiohttpClient:
 from vkbottle import Keyboard, Text, KeyboardButtonColor
 
 def _safe_label(text: str, max_len: int = 38) -> str:
-    """Жёсткая защита от VK API лимита 40 символов"""
     return (text or "")[:max_len].strip()
 
 def main_menu_json() -> str:
     kb = Keyboard(one_time=False)
-    kb.add(Text(_safe_label("Подключить Gmail")), color=KeyboardButtonColor.PRIMARY)
-    # 🔽 Кнопка "Проверить почту" удалена (сканирование фоновое)
-    kb.row()
-    kb.add(Text(_safe_label("Мои папки")), color=KeyboardButtonColor.SECONDARY)
-    kb.add(Text(_safe_label("Дайджест")), color=KeyboardButtonColor.SECONDARY)
-    kb.row()
-    kb.add(Text(_safe_label("Помощь")), color=KeyboardButtonColor.SECONDARY)
+    # Строка 1: Одна большая кнопка
+    kb.add(Text("Мои папки"), color=KeyboardButtonColor.POSITIVE)
+    kb.row() # Переход на новую строку
+    
+    # Строка 2: Две кнопки поровну
+    kb.add(Text("Мой Gmail"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text("Дедлайны"), color=KeyboardButtonColor.PRIMARY)
+    kb.row() # Переход на новую строку
+    
+    # Строка 3: Две кнопки поровну
+    kb.add(Text("Дайджест"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Инструкция"), color=KeyboardButtonColor.SECONDARY)
+    
     return kb.get_json()
 
 def email_nav_json(total: int, current: int) -> str:
     kb = Keyboard(one_time=False)
     kb.add(Text("Назад"), color=KeyboardButtonColor.SECONDARY)
+    # Кнопка с номером, по которой можно нажать для перехода к произвольному сообщению
     kb.add(Text(f"{current+1}/{total}"), color=KeyboardButtonColor.PRIMARY)
     kb.add(Text("Далее"), color=KeyboardButtonColor.SECONDARY)
     kb.row()
-    # 🔽 Заглушка и ссылка удалены. Теперь всегда кнопка возврата.
-    kb.add(Text("Папки"), color=KeyboardButtonColor.POSITIVE)
+    kb.add(Text("В папки"), color=KeyboardButtonColor.POSITIVE)
+    return kb.get_json()
+
+# ✅ НОВАЯ ФУНКЦИЯ: Клавиатура для ввода номера сообщения
+def jump_to_email_json(total: int) -> str:
+    kb = Keyboard(one_time=False)
+    kb.add(Text(f"Перейти к сообщению (1-{total})"), color=KeyboardButtonColor.PRIMARY)
+    kb.row()
+    kb.add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE)
     return kb.get_json()
 
 def cancel_menu_json() -> str:
@@ -280,9 +284,12 @@ def folders_menu_json(names: list[str], can_create: bool) -> str:
     kb = Keyboard(one_time=False)
     for i, n in enumerate(names):
         kb.add(Text(_safe_label(n)), color=KeyboardButtonColor.PRIMARY)
+        # Если кнопок много, делаем перенос каждые 2 кнопки для красоты
         if i % 2 == 1: kb.row()
+    
     if can_create:
         kb.row().add(Text("Создать папку"), color=KeyboardButtonColor.POSITIVE)
+    
     kb.row().add(Text("Назад в меню"), color=KeyboardButtonColor.SECONDARY)
     return kb.get_json()
 
@@ -293,14 +300,10 @@ def custom_folder_actions_json(name: str) -> str:
     kb.add(Text("Назад к папкам"), color=KeyboardButtonColor.SECONDARY)
     return kb.get_json()
 
-def email_nav_json(total: int, current: int) -> str:
+def app_password_intro_json() -> str:
     kb = Keyboard(one_time=False)
-    kb.add(Text("Назад"), color=KeyboardButtonColor.SECONDARY)
-    kb.add(Text(f"{current+1}/{total}"), color=KeyboardButtonColor.PRIMARY)
-    kb.add(Text("Далее"), color=KeyboardButtonColor.SECONDARY)
-    kb.row()
-    # 🔽 Вместо заглушки/ссылки теперь всегда кнопка возврата в папки
-    kb.add(Text("Папки"), color=KeyboardButtonColor.POSITIVE)
+    kb.add(Text("Понятно, я готов"), color=KeyboardButtonColor.POSITIVE)
+    kb.add(Text("Отмена"), color=KeyboardButtonColor.NEGATIVE)
     return kb.get_json()
 
 ================================================================================
@@ -318,24 +321,27 @@ from vkbottle.bot import Bot, Message
 from app.core.settings import settings
 from app.db.session import AsyncSessionMaker
 from app.bot.insecure_http import InsecureAiohttpClient
-from app.bot.keyboards import main_menu_json, cancel_menu_json, yes_no_menu_json, folders_menu_json, custom_folder_actions_json, email_nav_json
+from app.bot.keyboards import (
+    main_menu_json, cancel_menu_json, yes_no_menu_json,
+    folders_menu_json, custom_folder_actions_json, email_nav_json,
+    app_password_intro_json, jump_to_email_json  # ✅ Добавлен импорт новой клавиатуры
+)
 from app.services.user_service import UserService
 from app.services.mail_service import MailService
 from app.services.email_service import EmailService
 from app.services.account_info_service import AccountInfoService
 from app.services.folder_view_service import FolderViewService
 from app.services.folder_service import FolderService
-from app.bot.keyboards import (
-    main_menu_json, cancel_menu_json, yes_no_menu_json,
-    folders_menu_json, custom_folder_actions_json, email_nav_json
-)
-from app.db.session import AsyncSessionMaker
+from app.db.init_db import ensure_schema
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8")])
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8")]
+)
 logger = logging.getLogger("app")
-logger.info("Bot starting...")
 
 api = API(token=settings.VK_BOT_TOKEN, http_client=InsecureAiohttpClient())
 bot = Bot(api=api)
@@ -346,42 +352,61 @@ info_service = AccountInfoService()
 folder_view = FolderViewService()
 folder_service = FolderService()
 
+# --- State Management ---
 state: dict[int, dict] = {}
+
 def set_state(vk_user_id: int, name: str | None, data: dict | None = None) -> None:
     if name is None: state.pop(vk_user_id, None)
     else: state[vk_user_id] = {"name": name, "data": data or {}}
+
 def get_state_name(vk_user_id: int) -> str | None:
     s = state.get(vk_user_id)
     return s["name"] if s else None
+
 def get_state_data(vk_user_id: int) -> dict:
     s = state.get(vk_user_id)
     return s["data"] if s else {}
+
+# --- Text Templates ---
+INSTRUCTION_TEXT = (
+    "Инструкция по использованию\n"
+    "Я анализирую вашу почту, сортирую по папкам, извлекаю дедлайны и делаю дайджесты.\n"
+    "- Настройки Gmail: подключить почту или переподключить аккаунт.\n"
+    "- Актуальные дедлайны: список срочных задач с обратным отсчётом.\n"
+    "- Дайджест: краткое содержание последних писем.\n"
+    "- Профиль: информация о подключённом аккаунте.\n"
+    "Контакт администратора: @your_vk_id"
+)
+APP_PASSWORD_GUIDE = (
+    "Как получить App Password в Gmail:\n"
+    "1. Зайдите в https://myaccount.google.com\n"
+    "2. Раздел Безопасность -> включите двухфакторную аутентификацию.\n"
+    "3. В поиске страницы введите Пароли приложений (App Passwords).\n"
+    "4. Выберите Другое -> название Bot -> Создать.\n"
+    "5. Скопируйте 16-значный код и вернитесь сюда."
+)
 
 _BG_STARTED = False
 def start_background_tasks() -> None:
     global _BG_STARTED
     if _BG_STARTED: return
     _BG_STARTED = True
-    # 🔽 Исправлено на 60 секунд
     bot.loop_wrapper.add_task(email_service.poll_new_emails_forever(api=api, interval_sec=60))
-    logger.info("Background polling task started (every 1 minute).")
+    logger.info("Background polling task started.")
 
 async def _render_email_page(message: Message, vk_user_id: int):
     st = get_state_data(vk_user_id)
     if not st or "email_ids" not in st:
         set_state(vk_user_id, None)
-        await message.answer("Навигация сброшена. Выберите папку заново.", keyboard=main_menu_json())
+        await message.answer("•", keyboard=main_menu_json())
         return
-
     folder_name = st["folder_name"]
     email_ids = st["email_ids"]
     idx = st["current_index"]
-    
     if not email_ids:
         set_state(vk_user_id, None)
-        await message.answer("📭 Папка пуста.", keyboard=main_menu_json())
+        await message.answer("Папка пуста.", keyboard=main_menu_json())
         return
-        
     try:
         async with AsyncSessionMaker() as session:
             async with session.begin():
@@ -390,25 +415,25 @@ async def _render_email_page(message: Message, vk_user_id: int):
                 email = await folder_view.get_email_by_index(session, user.id, email_ids, idx)
     except Exception:
         set_state(vk_user_id, None)
-        await message.answer("Не удалось загрузить письмо.", keyboard=main_menu_json())
+        await message.answer("Ошибка загрузки.", keyboard=main_menu_json())
         return
-
     if not email:
         set_state(vk_user_id, None)
         await message.answer("Письмо не найдено.", keyboard=main_menu_json())
         return
-
     subj = email.subject or "(без темы)"
     frm = email.from_email or "(неизвестно)"
     dt = email.received_at.strftime("%d.%m %H:%M") if email.received_at else "?"
-    summ = email.ai_summary or "Саммари ещё не сформировано."
-
-    # 🔽 Ссылка полностью удалена из текста
-    txt = f"[{folder_name}]\n👤 {frm}\n🕒 {dt}\n📝 {subj}\n💡 {summ}"
+    summ = email.ai_summary or "Саммари не сформировано."
+    txt = f"[{folder_name}]\nОт: {frm}\nДата: {dt}\nТема: {subj}\nСаммари: {summ}"
+    # Используем email_nav_json, который содержит кнопку с номером
     await message.answer(txt, keyboard=email_nav_json(len(email_ids), idx))
+
 @bot.on.message()
 async def router(message: Message):
+    logger.info("📩 [DEBUG] Получено сообщение от %s: '%s'", message.from_id, message.text)
     start_background_tasks()
+    await ensure_schema()
     vk_user_id = message.from_id
     text = (message.text or "").strip()
     t = text.casefold()
@@ -416,229 +441,236 @@ async def router(message: Message):
     st_name = get_state_name(vk_user_id)
     st_data = get_state_data(vk_user_id)
 
+    # 1. Глобальные действия (высокий приоритет)
     if t == "отмена":
         set_state(vk_user_id, None)
-        await message.answer("Ок, отменил.", keyboard=main_menu_json())
+        await message.answer("Хорошо, вернемся назад", keyboard=main_menu_json())
         return
     if t in ("начать", "start", "старт"):
         set_state(vk_user_id, None)
-        await message.answer("Привет! Выбери действие:", keyboard=main_menu_json())
-        return
-    if t == "помощь":
-        await message.answer("Кнопки: Подключить Gmail, Проверить почту, Мои папки, Дайджест. Для Gmail нужен App Password при включенной 2FA.", keyboard=main_menu_json())
+        await message.answer("Привет! Я — Flow Agent, твой умный помощник для работы с почтой 🤖📧\n"
+                             "Я анализирую входящие письма, сортирую их по папкам, узнаю о дедлайнах и делаю краткие дайджесты.\n"
+                             "Давай начнём: подключи свою почту, нажав кнопку «Мой Gmail» ниже 👇", keyboard=main_menu_json())
         return
     if t == "назад в меню":
         set_state(vk_user_id, None)
-        await message.answer("Меню:", keyboard=main_menu_json())
-        return
-    if t == "мой gmail":
-        msg = await info_service.get_gmail_info(vk_user_id)
-        await message.answer(msg, keyboard=main_menu_json())
-        return
-    if t == "подключить gmail":
-        acc = await folder_service.get_active_gmail_account(vk_user_id)
-        if acc:
-            set_state(vk_user_id, "wait_reconnect_confirm", {"email": acc.email_address})
-            await message.answer(f"Уже подключено: {acc.email_address}\nПереподключить? (Да/Нет)", keyboard=yes_no_menu_json())
-            return
-        set_state(vk_user_id, "wait_gmail_email", {})
-        await message.answer("Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
-        return
-    if t == "проверить почту":
-        await message.answer("Проверяю новые письма...")
-        saved, code = await email_service.sync_new(vk_user_id)
-        if code == "NO_MAIL": await message.answer("Сначала подключи Gmail.", keyboard=main_menu_json()); return
-        if code == "IMAP_TIMEOUT": await message.answer("Gmail отвечает слишком долго.", keyboard=main_menu_json()); return
-        if code == "IMAP_ERROR": await message.answer("Ошибка IMAP.", keyboard=main_menu_json()); return
-        await message.answer(f"Готово! Новых писем: {saved}", keyboard=main_menu_json())
-        return
-    if t == "дайджест":
-        ok, digest_text = await email_service.build_digest_text(vk_user_id, limit=5)
-        await message.answer(digest_text, keyboard=main_menu_json())
+        await message.answer("Окей, возвращаю в меню", keyboard=main_menu_json())
         return
 
-    if st_name == "wait_reconnect_confirm":
-        if t == "да": set_state(vk_user_id, "wait_gmail_email", {}); await message.answer("Введи Gmail адрес:", keyboard=cancel_menu_json()); return
-        if t == "нет": set_state(vk_user_id, None); await message.answer("Ок.", keyboard=main_menu_json()); return
-        await message.answer("Ответь «Да» или «Нет».", keyboard=yes_no_menu_json()); return
-    if st_name == "wait_gmail_email":
-        email = text.strip()
-        if "@" not in email or "." not in email: await message.answer("Это не email. Повтори:", keyboard=cancel_menu_json()); return
-        st_data["email"] = email
-        set_state(vk_user_id, "wait_gmail_pass", st_data)
-        await message.answer("Введи App Password:", keyboard=cancel_menu_json())
-        return
-    if st_name == "wait_gmail_pass":
-        app_pass = text
-        email = st_data.get("email")
-        if not email: set_state(vk_user_id, "wait_gmail_email", {}); await message.answer("Введи email заново:", keyboard=cancel_menu_json()); return
-        await message.answer("Проверяю доступ...")
-        ok, code = await mail_service.connect_gmail(vk_user_id, email, app_pass)
-        set_state(vk_user_id, None)
-        if not ok: await message.answer("Ошибка входа. Проверь данные.", keyboard=main_menu_json()); return
-        await message.answer("Gmail подключен. Скачиваю последние 15 писем...")
-        saved, _ = await email_service.sync_after_connect(vk_user_id, n=15)
-        await message.answer(f"Готово! Обработано: {saved}", keyboard=main_menu_json())
-        return
-
-    if t == "мои папки":
-        folder_names, can_create, custom_names = await folder_service.get_folder_menu_info(vk_user_id)
-        set_state(vk_user_id, "folders_menu", {"custom_names": custom_names})
-        await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
-        return
-    if st_name == "folders_menu":
-        folder_names, can_create, custom_names = await folder_service.get_folder_menu_info(vk_user_id)
-        set_state(vk_user_id, "folders_menu", {"custom_names": custom_names})
-        
-        if t == "создать папку":
-            if not can_create:
-                await message.answer(f"Лимит: 3 кастомные папки. Удали одну.", keyboard=folders_menu_json(folder_names, False))
-                return
-            set_state(vk_user_id, "wait_custom_desc", {})
-            await message.answer("Опиши, что складывать сюда.\nПример: «хакатоны, олимпиады, стажировки в IT»", keyboard=cancel_menu_json())
-            return
-
-        matched = next((fn for fn in folder_names if fn.strip().casefold() == t.strip().casefold()), None)
-        
-        if matched:
-            is_custom = matched.strip().casefold() in [n.strip().casefold() for n in custom_names]
-            if is_custom:
-                set_state(vk_user_id, "custom_folder_menu", {"custom_name": matched})
-                await message.answer(f"Папка «{matched}». Что сделать?", keyboard=custom_folder_actions_json(matched))
-                return
-
-            async with AsyncSessionMaker() as session:
-                async with session.begin():
-                    user = await user_service.repo.get_by_vk_id(session, vk_user_id)
-                    if not user: return
-                    email_ids = await folder_view.get_folder_email_ids(session, user.id, matched)
-                    if not email_ids:
-                        await message.answer(f"📭 Папка «{matched}» пуста.", keyboard=folders_menu_json(folder_names, can_create))
-                        return
-                    set_state(vk_user_id, "view_email_page", {"folder_name": matched, "email_ids": email_ids, "current_index": 0})
-                    await _render_email_page(message, vk_user_id)
-                    return
-        await message.answer("Выбери папку кнопкой или «Назад в меню».", keyboard=folders_menu_json(folder_names, can_create))
-        return
-    if st_name == "custom_folder_menu":
-        custom_name = st_data.get("custom_name")
-        if not custom_name:
-            set_state(vk_user_id, None)
-            await message.answer("Папка не найдена.", keyboard=main_menu_json())
-            return
-
-        if t == "назад к папкам":
+    # 2. Основные кнопки (работают только из корня)
+    if st_name is None:
+        if t == "мои папки":
             folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
             set_state(vk_user_id, "folders_menu", {})
             await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
             return
+        if t == "инструкция":
+            await message.answer(INSTRUCTION_TEXT, keyboard=main_menu_json())
+            return
+        if t == "дайджест":
+            ok, digest_text = await email_service.build_digest_text(vk_user_id, limit=5)
+            await message.answer(digest_text if ok else "Писем пока нет.", keyboard=main_menu_json())
+            return
+        if t == "дедлайны":
+            await message.answer(await email_service.get_active_deadlines_text(vk_user_id), keyboard=main_menu_json())
+            return
+        if t == "мой gmail":
+            acc = await folder_service.get_active_gmail_account(vk_user_id)
+            if acc:
+                set_state(vk_user_id, "wait_reconnect_confirm", {"email": acc.email_address})
+                await message.answer(f"Подключено: {acc.email_address}\nПереподключить?", keyboard=yes_no_menu_json())
+            else:
+                set_state(vk_user_id, "gmail_intro", {})
+                await message.answer(APP_PASSWORD_GUIDE, keyboard=app_password_intro_json())
+            return
 
-        if t.startswith("открыть:"):
-            clicked_name = t.replace("открыть:", "").strip()
-            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
-            matched = next((fn for fn in folder_names if fn.strip().casefold() == clicked_name.strip().casefold()), None)
-            if matched:
+    # 3. Обработка состояний подключения
+    if st_name == "gmail_intro":
+        if t == "понятно, я готов":
+            set_state(vk_user_id, "wait_gmail_email", {})
+            await message.answer("Введите Gmail адрес:", keyboard=cancel_menu_json())
+            return
+    if st_name == "wait_reconnect_confirm":
+        if t == "да":
+            set_state(vk_user_id, "gmail_intro", {})
+            await message.answer(APP_PASSWORD_GUIDE, keyboard=app_password_intro_json())
+        elif t == "нет":
+            set_state(vk_user_id, None)
+            await message.answer("Окей, настройки Gmail остались прежними", keyboard=main_menu_json())
+        return
+    if st_name == "wait_gmail_email":
+        if "@" not in text or "." not in text:
+            await message.answer("Неверный формат почты:", keyboard=cancel_menu_json())
+            return
+        st_data["email"] = text.strip()
+        set_state(vk_user_id, "wait_gmail_pass", st_data)
+        await message.answer("Введите 16-значный App Password:", keyboard=cancel_menu_json())
+        return
+    if st_name == "wait_gmail_pass":
+        app_pass = text.strip().replace(" ", "")
+        email_addr = st_data.get("email")
+        await message.answer("Проверяю доступ...")
+        ok, code = await mail_service.connect_gmail(vk_user_id, email_addr, app_pass)
+        set_state(vk_user_id, None)
+        if ok:
+            await message.answer("Подключено. Скачиваю последние письма...")
+            saved, _ = await email_service.sync_after_connect(vk_user_id, n=15)
+            await message.answer(f"Синхронизировано: {saved} писем.", keyboard=main_menu_json())
+        else:
+            await message.answer("Ошибка входа. Проверьте пароль.", keyboard=main_menu_json())
+        return
+
+    # 4. Навигация по папкам
+    if st_name == "folders_menu":
+        folder_names, can_create, custom_names = await folder_service.get_folder_menu_info(vk_user_id)
+        if t == "создать папку":
+            if not can_create:
+                await message.answer("Лимит: 3 кастомные папки.", keyboard=folders_menu_json(folder_names, False))
+                return
+            set_state(vk_user_id, "wait_custom_desc", {})
+            await message.answer("Опишите папку:", keyboard=cancel_menu_json())
+            return
+        matched = next((fn for fn in folder_names if fn.strip().casefold() == t.strip().casefold()), None)
+        if matched:
+            is_custom = matched.strip().casefold() in [n.strip().casefold() for n in custom_names]
+            if is_custom:
+                set_state(vk_user_id, "custom_folder_menu", {"custom_name": matched})
+                await message.answer(f"Папка {matched}. Действие?", keyboard=custom_folder_actions_json(matched))
+            else:
                 async with AsyncSessionMaker() as session:
                     async with session.begin():
                         user = await user_service.repo.get_by_vk_id(session, vk_user_id)
                         if not user: return
                         email_ids = await folder_view.get_folder_email_ids(session, user.id, matched)
                         if not email_ids:
-                            await message.answer(f"📭 Папка «{matched}» пуста. Возвращаюсь к списку папок.", keyboard=folders_menu_json(folder_names, can_create))
-                            set_state(vk_user_id, "folders_menu", {})
+                            await message.answer("Папка пуста.", keyboard=folders_menu_json(folder_names, can_create))
                             return
                         set_state(vk_user_id, "view_email_page", {"folder_name": matched, "email_ids": email_ids, "current_index": 0})
                         await _render_email_page(message, vk_user_id)
-                        return
+            return
 
+    if st_name == "custom_folder_menu":
+        custom_name = st_data.get("custom_name")
+        if t == "назад к папкам":
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            set_state(vk_user_id, "folders_menu", {})
+            await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
+            return
+        if t.startswith("открыть:"):
+            clicked = t.replace("открыть:", "").strip()
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            matched = next((fn for fn in folder_names if fn.strip().casefold() == clicked.strip().casefold()), None)
+            if matched:
+                async with AsyncSessionMaker() as session:
+                    async with session.begin():
+                        user = await user_service.repo.get_by_vk_id(session, vk_user_id)
+                        if user:
+                            email_ids = await folder_view.get_folder_email_ids(session, user.id, matched)
+                            if email_ids:
+                                set_state(vk_user_id, "view_email_page", {"folder_name": matched, "email_ids": email_ids, "current_index": 0})
+                                await _render_email_page(message, vk_user_id)
+                            else:
+                                await message.answer("Пусто.", keyboard=folders_menu_json(folder_names, can_create))
+                set_state(vk_user_id, "folders_menu", {})
+                return
         if t == "удалить папку":
             async with AsyncSessionMaker() as session:
                 async with session.begin():
                     user = await user_service.repo.get_by_vk_id(session, vk_user_id)
-                    if not user: return
-                    folder = await folder_service.folder_repo.get_by_name(session, user.id, custom_name)
-                    if folder:
-                        await folder_service.folder_repo.delete_custom_folder(session, user.id, folder.id)
+                    if user:
+                        folder = await folder_service.folder_repo.get_by_name(session, user.id, custom_name)
+                        if folder: 
+                            await folder_service.folder_repo.delete_custom_folder(session, user.id, folder.id)
+                            # ✅ ИСПРАВЛЕНИЕ: После удаления сразу обновляем меню и сообщаем об успехе
+                            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+                            set_state(vk_user_id, "folders_menu", {})
+                            await message.answer(f"✅ Папка «{custom_name}» удалена.", keyboard=folders_menu_json(folder_names, can_create))
+                            return # Прерываем выполнение, так как ответ уже отправлен
+            # Если дошли сюда, значит папка не была найдена или ошибка
             folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
             set_state(vk_user_id, "folders_menu", {})
-            await message.answer(f"🗑 Папка «{custom_name}» удалена.", keyboard=folders_menu_json(folder_names, can_create))
+            await message.answer("❌ Не удалось удалить папку.", keyboard=folders_menu_json(folder_names, can_create))
             return
 
-        await message.answer("Выбери действие.", keyboard=custom_folder_actions_json(custom_name))
-        return
+    # ✅ ОБНОВЛЕННАЯ ЛОГИКА ПРОСМОТРА ПИСЕМ
     if st_name == "view_email_page":
         st = get_state_data(vk_user_id)
         email_ids = st.get("email_ids", [])
         idx = st.get("current_index", 0)
         total = len(email_ids)
-
+        
         if total == 0:
             set_state(vk_user_id, None)
-            await message.answer("📭 Папка пуста.", keyboard=main_menu_json())
+            await message.answer("•", keyboard=main_menu_json())
             return
 
-        # 🔽 Кнопка "Папки" → выбрасывает в выбор папок
-        if t == "папки":
+        # Обработка кнопки "В папки"
+        if t == "в папки":
             folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
             set_state(vk_user_id, "folders_menu", {})
             await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
             return
-
-        # 🔽 Клик по кнопке "1/9" → подсказка ввода номера
-        if "/" in t and t.replace("/", "").replace(" ", "").isdigit():
-            await message.answer(f"Напишите номер письма, к которому хотите перейти (от 1 до {total}).", keyboard=cancel_menu_json())
-            return
-
-        # 🔽 Цикличная навигация (0-1 → n, n+1 → 0)
+        
+        # Обработка кнопки "Назад"
         if t == "назад":
             st["current_index"] = (idx - 1) % total
             set_state(vk_user_id, "view_email_page", st)
             await _render_email_page(message, vk_user_id)
             return
-        elif t == "далее":
+        
+        # Обработка кнопки "Далее"
+        if t == "далее":
             st["current_index"] = (idx + 1) % total
             set_state(vk_user_id, "view_email_page", st)
             await _render_email_page(message, vk_user_id)
             return
 
-        # 🔽 Ввод номера вручную (после подсказки или напрямую)
-        if t.replace(" ", "").isdigit():
-            try:
-                num = int(t)
-                if 1 <= num <= total:
-                    st["current_index"] = num - 1
-                    set_state(vk_user_id, "view_email_page", st)
-                    await _render_email_page(message, vk_user_id)
-                    return
-            except ValueError:
-                pass
+        # ✅ НОВАЯ ЛОГИКА: Обработка нажатия на кнопку с номером (например, "5/10")
+        # Текст кнопки формируется как "{current+1}/{total}". 
+        # Мы проверяем, соответствует ли введенный текст этому формату.
+        current_button_text = f"{idx + 1}/{total}"
+        if t == current_button_text.casefold():
+            # Переходим в состояние ожидания ввода номера
+            set_state(vk_user_id, "wait_jump_to_email", st.copy())
+            await message.answer(f"Вы можете написать число от 1 до {total}, чтобы перейти к конкретному письму.", keyboard=jump_to_email_json(total))
+            return
 
-        set_state(vk_user_id, "view_email_page", st)
-        await _render_email_page(message, vk_user_id)
-        return
+    # ✅ НОВОЕ СОСТОЯНИЕ: Ожидание ввода номера сообщения
+    if st_name == "wait_jump_to_email":
+        email_ids = st_data.get("email_ids", [])
+        total = len(email_ids)
+        
+        # Проверяем, является ли ввод числом
+        if text.isdigit():
+            num = int(text)
+            if 1 <= num <= total:
+                # Вычисляем индекс (число пользователя - 1)
+                new_idx = num - 1
+                st_data["current_index"] = new_idx
+                set_state(vk_user_id, "view_email_page", st_data)
+                await _render_email_page(message, vk_user_id)
+                return
+            else:
+                await message.answer(f"Пожалуйста, введите число от 1 до {total}.", keyboard=jump_to_email_json(total))
+                return
+        else:
+            await message.answer("Это не число. Пожалуйста, введите номер письма.", keyboard=jump_to_email_json(total))
+            return
+
     if st_name == "wait_custom_desc":
         raw = text.strip()
-        if len(raw) < 5: await message.answer("Описание слишком короткое:", keyboard=cancel_menu_json()); return
-        await message.answer("🤖 Анализирую описание и создаю папку...")
+        if len(raw) < 5:
+            await message.answer("Слишком коротко.", keyboard=cancel_menu_json())
+            return
+        await message.answer("Создаю папку...")
         intent = await email_service.ai_client.parse_folder_intent(raw)
         ok, msg = await folder_service.create_custom_folder_ai(vk_user_id, intent.name, intent.description, intent.keywords)
         set_state(vk_user_id, None)
         await message.answer(msg, keyboard=main_menu_json())
         return
-    if st_name == "wait_email_number":
-        try:
-            num = int(text.strip())
-            st = get_state_data(vk_user_id)
-            if 1 <= num <= len(st["email_ids"]):
-                st["current_index"] = num - 1
-                set_state(vk_user_id, "view_email_page", st)
-                await _render_email_page(message, vk_user_id)
-                return
-        except ValueError: pass
-        await message.answer("Неверный формат:", keyboard=cancel_menu_json())
-        return
 
-    await message.answer("Не понял. Нажми «Начать».", keyboard=main_menu_json())
+    # Если ничего не подошло, возвращаем в меню (старое поведение, но теперь оно реже срабатывает)
+    await message.answer("•", keyboard=main_menu_json())
 
 if __name__ == "__main__":
     bot.run_forever()
@@ -660,31 +692,27 @@ class Settings(BaseSettings):
 
     VK_BOT_TOKEN: str
     DATABASE_URL: str
-    
-    # 🔑 Ключ шифрования (ОБЯЗАТЕЛЬНО в .env)
     FERNET_KEY: str = ""
-    
-    # 🤖 Выбор провайдера: "pollinations" (работает сейчас) или "local" (когда поднимешь Ollama)
     AI_PROVIDER: str = "pollinations"
 
-    # 🌐 Pollinations AI
     POLLINATIONS_API_KEY: str = ""
     POLLINATIONS_BASE_URL: str = "https://gen.pollinations.ai"
     POLLINATIONS_CHAT_ENDPOINT: str = "/v1/chat/completions"
     POLLINATIONS_MODEL: str = "openai"
     POLLINATIONS_VERIFY_SSL: bool = True
 
-    # 🏠 Локальная LLM (Ollama)
     LOCAL_LLM_URL: str = "http://localhost:11434/v1/chat/completions"
     LOCAL_LLM_MODEL: str = "phi3:mini"
 
-    # ⏰ Напоминания
-    REMINDER_CHECK_INTERVAL_SEC: int = 3600
-    REMINDER_COOLDOWN_HOURS: int = 6
-
+    USER_TIMEZONE: str = "UTC"
+    REMINDER_OFFSETS_MINUTES: list[int] = [-1440, -60, -15]  # 24ч, 1ч, 15мин до дедлайна
+    REMINDER_TOLERANCE_SEC: int = 120                      # Окно срабатывания ±5 минут
+    REMINDER_CHECK_INTERVAL_SEC: int = 180                # Часовой пояс пользователя
+    
     @field_validator("FERNET_KEY")
+
     @classmethod
-    def check_fernet_key(cls, v):
+    def validate_fernet_key(cls, v):
         if not v or len(v.strip()) < 32:
             raise ValueError("❌ FERNET_KEY не указан или слишком короткий в .env!")
         return v.strip()
@@ -930,6 +958,9 @@ class FolderRepository:
             folder.description = description
             await session.flush()
     async def ensure_system_folders(self, session: AsyncSession, user_id: int) -> dict[str, Folder]:
+        # 🔽 Чистим сироты один раз за сессию
+        await self.clean_orphaned_links(session)
+        
         existing = await self.list_by_user(session, user_id)
         by_name = {f.name: f for f in existing}
         for name in SYSTEM_FOLDERS:
@@ -966,6 +997,29 @@ class FolderRepository:
         await session.delete(folder)
         await session.flush()
         return True
+    async def clean_orphaned_links(self, session: AsyncSession) -> int:
+        """Удаляет email_folder_links и обнуляет emails.folder_id для несуществующих папок"""
+        from app.models.email_folder_link import EmailFolderLink
+        from app.models.email import Email
+        from sqlalchemy import delete, update
+        
+        # Сироты в связках
+        orphans_stmt = (
+            delete(EmailFolderLink)
+            .where(EmailFolderLink.folder_id.not_in(
+                select(Folder.id)
+            ))
+        )
+        res = await session.execute(orphans_stmt)
+        
+        # Сироты в emails.folder_id
+        await session.execute(
+            update(Email)
+            .where(Email.folder_id.not_in(select(Folder.id)))
+            .values(folder_id=None)
+        )
+        await session.flush()
+        return res.rowcount
 
 ================================================================================
 # FILE: db/repositories/mail_account_repository.py
@@ -1242,7 +1296,12 @@ async def fetch_since_uid_gmail_preview(email: str, password: str, since_uid: in
 from email import message_from_bytes
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
+import logging
+from email import message_from_bytes
+from email.header import decode_header
+from email.utils import parseaddr, parsedate_to_datetime
 
+logger = logging.getLogger("parser")  
 
 def _decode_header(value: str | None) -> str | None:
     if not value:
@@ -1381,6 +1440,7 @@ class Email(Base):
     ai_classified_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_reminder_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    reminder_sent: Mapped[str] = mapped_column(Text, default="[]")
 
 ================================================================================
 # FILE: models/email_folder_link.py
@@ -1584,14 +1644,11 @@ class EmailService:
                 acc = await self.mail_repo.get_active_gmail(session, user.id)
                 if not acc: return 0, "NO_MAIL"
                 await self.folder_repo.ensure_system_folders(session, user.id)
-                
                 try:
                     raw_list = await fetch_last_n_gmail_preview(acc.email_address, decrypt(acc.app_password), n=n)
                 except Exception:
                     logger.exception("IMAP fetch error for vk=%s", vk_user_id)
                     return 0, "IMAP_ERROR"
-                
-                # ✅ Передаём сессию вниз, чтобы избежать вложенности
                 saved_new = await self._store_raw_only_new(session, vk_user_id, raw_list)
                 uids = [uid for uid, _, _ in raw_list]
                 await self._ai_backfill_for_uids_robust(session, vk_user_id, uids)
@@ -1607,13 +1664,11 @@ class EmailService:
                 if not acc: return 0, "NO_MAIL"
                 await self.folder_repo.ensure_system_folders(session, user.id)
                 max_uid = await self.email_repo.max_uid(session, acc.id)
-                
                 try:
                     raw_list = await fetch_since_uid_gmail_preview(acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200)
                 except Exception:
                     logger.exception("IMAP sync error for vk=%s", vk_user_id)
                     return 0, "IMAP_ERROR"
-                
                 saved = 0
                 if raw_list:
                     saved = await self._store_raw_only_new(session, vk_user_id, raw_list)
@@ -1628,7 +1683,6 @@ class EmailService:
         if not user: return 0
         acc = await self.mail_repo.get_active_gmail(session, user.id)
         if not acc: return 0
-
         saved = 0
         skipped = 0
         for uid, raw_bytes, _ in raw_list:
@@ -1665,13 +1719,11 @@ class EmailService:
         if not user: return
         acc = await self.mail_repo.get_active_gmail(session, user.id)
         if not acc: return
-        
         q1 = select(Email).where(Email.mail_account_id == acc.id, Email.imap_uid.in_(uids))
         emails = list((await session.execute(q1)).scalars().all())
         if not emails:
             q2 = select(Email).where(Email.user_id == user.id, Email.imap_uid.in_(uids))
             emails = list((await session.execute(q2)).scalars().all())
-            
         ids = [e.id for e in emails if not e.ai_summary]
         if ids:
             await self._ai_classify_and_assign(session, vk_user_id, ids)
@@ -1679,29 +1731,33 @@ class EmailService:
     async def _ai_classify_and_assign(self, session, vk_user_id: int, email_ids: list[int]) -> None:
         user = await self.user_repo.get_by_vk_id(session, vk_user_id)
         if not user: return
-        
         folders = await self.folder_repo.ensure_system_folders(session, user.id)
         important_folder = folders.get("Важное")
         custom_folders = await self.folder_repo.get_custom_folders(session, user.id)
         custom_folder_names = [f.name for f in custom_folders]
-        
         custom_rules_payload = []
         if custom_folders:
             for cf in custom_folders:
                 rules = await self.rule_repo.list_active_by_folder(session, cf.id)
                 custom_rules_payload.extend([{"folder": cf.name, "rule_text": r.rule_text} for r in rules])
-                
         emails = list((await session.execute(select(Email).where(Email.id.in_(email_ids)))).scalars().all())
-        
         for e in emails:
             if e.ai_summary: continue
             received_str = e.received_at.isoformat() if e.received_at else None
-            
             try:
                 result = await self.ai_client.classify_email(
                     subject=e.subject, from_email=e.from_email, received_at=received_str,
                     body_snippet=e.body_text, user_folders=custom_folder_names, user_rules=custom_rules_payload
                 )
+                # Серверная страховка: дедлайн только для high
+                if result.importance != "high":
+                    result.deadline = None
+                    result.actions = []
+                
+                # ✅ ДОБАВЛЕНА ЗАЩИТА: Проверка наличия category
+                if not result.category:
+                     raise ValueError("Missing category in AI response")
+
                 summary = (result.summary or "").strip()[:150]
                 e.ai_summary = summary
                 e.ai_importance = result.importance
@@ -1709,6 +1765,7 @@ class EmailService:
                 e.ai_actions = json.dumps(result.actions or [], ensure_ascii=False)
                 e.ai_category = (result.category or "")[:64]
                 e.ai_classified_at = datetime.now(timezone.utc)
+                
                 primary_name = (result.suggested_folder or "Важное").strip()
                 ai_deadline = result.deadline
                 ai_actions = result.actions or []
@@ -1719,15 +1776,15 @@ class EmailService:
                 e.ai_classified_at = datetime.now(timezone.utc)
                 ai_deadline = None
                 ai_actions = []
-                
+            
             primary_folder = folders.get(primary_name)
             if not primary_folder:
-                custom = next((f for f in custom_folders if f.name == primary_name), None)
+                custom = next((f for f in custom_folders if f.name.strip().casefold() == primary_name.strip().casefold()), None)
                 primary_folder = custom
             if not primary_folder:
                 primary_folder = folders.get("Важное")
                 primary_name = "Важное"
-                
+            
             if primary_folder:
                 e.folder_id = primary_folder.id
                 await self.link_repo.add_link_if_missing(session, e.id, primary_folder.id)
@@ -1737,26 +1794,65 @@ class EmailService:
     async def build_digest_text(self, vk_user_id: int, limit: int = 5) -> tuple[bool, str]:
         await ensure_schema()
         async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user: return False, "Сначала напиши «Начать»."
-                emails = await self.email_repo.list_last(session, user.id, limit=limit)
-                if not emails: return True, "Писем пока нет."
-                
-                lines = ["📬 Дайджест (саммари последних писем):"]
-                for e in emails:
-                    if not e.ai_summary: continue
-                    frm = e.from_email or "(unknown)"
-                    subj = e.subject or "(no subject)"
-                    lines.append(f"- {frm} | {subj}\n{e.ai_summary}")
-                return True, _truncate_vk("\n".join(lines))
+            user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+            if not user: return False, "Сначала напиши Начать."
+            emails = await self.email_repo.list_last(session, user.id, limit=limit)
+            valid_emails = [e for e in emails if e.ai_summary]
+            if not valid_emails: return True, "Писем пока нет."
+            lines = [f"Дайджест ({len(valid_emails)} писем)"]
+            for i, e in enumerate(valid_emails, 1):
+                frm = e.from_email.split('@')[0] if e.from_email else "Unknown"
+                subj = e.subject or "(Без темы)"
+                summ = e.ai_summary
+                block = f"{i}. {subj}\nОт: {frm}\nСаммари: {summ}"
+                lines.append(block)
+            return True, _truncate_vk("\n".join(lines))
+
+    async def get_active_deadlines_text(self, vk_user_id: int) -> str:
+        await ensure_schema()
+        async with AsyncSessionMaker() as session:
+            user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+            if not user: return "..."
+            stmt = select(Email).where(
+                Email.user_id == user.id,
+                Email.ai_importance == "high",
+                Email.ai_deadline.isnot(None)
+            ).order_by(Email.ai_deadline.asc())
+            result = await session.execute(stmt)
+            emails = list(result.scalars().all())
+            if not emails:
+                return "Горящих дедлайнов нет."
+            lines = ["Актуальные дедлайны"]
+            for e in emails:
+                if not e.ai_deadline: continue
+                try:
+                    dl_str = e.ai_deadline
+                    if " " in dl_str:
+                        dl_date = datetime.strptime(dl_str, "%Y-%m-%d %H:%M")
+                    else:
+                        dl_date = datetime.strptime(dl_str, "%Y-%m-%d")
+                    now = datetime.now()
+                    delta = dl_date - now
+                    days = delta.days
+                    hours = delta.seconds // 3600
+                    if days < 0: time_text = "Просрочено"
+                    elif days == 0: time_text = f"Сегодня ({hours}ч)"
+                    elif days == 1: time_text = "Завтра"
+                    else: time_text = f"Осталось {days} дн."
+                    frm = e.from_email or "Unknown"
+                    subj = e.subject or "Без темы"
+                    summ = e.ai_summary or ""
+                    block = f"Дата: {time_text}\nТема: {subj}\nОт: {frm}\nСаммари: {summ}"
+                    lines.append(block)
+                except Exception:
+                    continue
+            return "\n".join(lines)
 
     async def poll_new_emails_forever(self, api: API, interval_sec: int = 300) -> None:
         await ensure_schema()
-        from app.services.reminder_service import reminder_service
-        reminder_service.start(api, interval_sec=60)
+        from app.services.reminder_service import get_reminder_service
+        get_reminder_service().start(api, interval_sec=60)
         logger.info("Background polling started (every %ds)", interval_sec)
-        
         while True:
             try:
                 async with self._poll_lock:
@@ -1774,20 +1870,16 @@ class EmailService:
                         if not acc.app_password:
                             logger.warning("Empty password for vk_id=%s", vk_user_id)
                             continue
-                            
                         decrypted_pass = decrypt(acc.app_password)
                         max_uid = await self.email_repo.max_uid(session, acc.id)
                         raw_list = await fetch_since_uid_gmail_preview(acc.email_address, decrypted_pass, since_uid=max_uid, max_messages=200)
-                        
                         if not raw_list:
                             continue
-                            
                         saved = await self._store_raw_only_new(session, vk_user_id, raw_list)
                         uids = [uid for uid, _, _ in raw_list]
                         await self._ai_backfill_for_uids_robust(session, vk_user_id, uids)
-                        
                         if saved > 0:
-                            await api.messages.send(user_id=vk_user_id, random_id=0, message=f"✅ Новые письма: {saved}. Обработал и разложил по папкам.")
+                            await api.messages.send(user_id=vk_user_id, random_id=0, message=f"Новые письма: {saved}. Обработал и разложил по папкам.")
                     except Exception:
                         logger.exception("Polling failed for vk_user_id=%s", vk_user_id)
 
@@ -1943,12 +2035,14 @@ class MailService:
 ================================================================================
 # FILE: services/reminder_service.py
 
+# app/services/reminder_service.py
 import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from sqlalchemy import select
+from sqlalchemy import select, func, cast
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from vkbottle import API
 from app.core.settings import settings
 from app.db.session import AsyncSessionMaker
@@ -1960,7 +2054,11 @@ logger = logging.getLogger("reminder")
 class ReminderService:
     def __init__(self) -> None:
         self._running = False
-        self.tz = ZoneInfo(settings.USER_TIMEZONE)
+        try:
+            self.tz = ZoneInfo(settings.USER_TIMEZONE)
+        except Exception:
+            logger.warning(f"❌ Timezone '{settings.USER_TIMEZONE}' not found. Falling back to UTC.")
+            self.tz = ZoneInfo("UTC")
 
     def start(self, api: API, interval_sec: int | None = None) -> None:
         if self._running: return
@@ -1982,13 +2080,23 @@ class ReminderService:
 
     async def _check_and_send(self, api: API) -> None:
         now_tz = datetime.now(self.tz)
+        
+        # Вычисляем дату 3 дня назад в Python, чтобы избежать сложных SQL-функций
+        # Это работает одинаково для SQLite и PostgreSQL
+        cutoff_date = now_tz - timedelta(days=3)
+
         async with AsyncSessionMaker() as session:
-            # ✅ ТОЛЬКО HIGH + есть дедлайн + не все напоминания отправлены
+            # Используем стандартные фильтры SQLAlchemy
             stmt = select(Email).where(
                 Email.ai_importance == "high",
                 Email.ai_deadline.isnot(None),
-                Email.folder_id.isnot(None)
+                Email.folder_id.isnot(None),
+                # Фильтруем письма, чей дедлайн больше чем 3 дня назад
+                # Так как ai_deadline хранится как строка "YYYY-MM-DD HH:MM", 
+                # мы можем сравнивать строки напрямую, так как формат ISO сортируется лексикографически верно
+                Email.ai_deadline >= cutoff_date.strftime("%Y-%m-%d %H:%M")
             )
+            
             result = await session.execute(stmt)
             emails = result.scalars().all()
             
@@ -2002,39 +2110,45 @@ class ReminderService:
     async def _process_email(self, api: API, session, email: Email, now: datetime) -> None:
         deadline_dt = self._parse_deadline(email.ai_deadline)
         if not deadline_dt: return
-
+        
         deadline_tz = deadline_dt.replace(tzinfo=self.tz)
+        
         diff_minutes = (deadline_tz - now).total_seconds() / 60
+        
         sent_offsets = json.loads(email.reminder_sent or "[]")
-
+        
         for offset in settings.REMINDER_OFFSETS_MINUTES:
             if str(offset) in sent_offsets: continue
+            
             target_diff = offset
             if abs(diff_minutes - target_diff) <= (settings.REMINDER_TOLERANCE_SEC / 60):
                 user = await session.get(User, email.user_id)
                 if not user: continue
-
+                
                 acts = ""
                 try:
                     a = json.loads(email.ai_actions or "[]")
                     acts = f"\n👉 Действия: {', '.join(a)}" if a else ""
                 except: pass
-
+                
                 msg = (
                     f"⏰ НАПОМИНАНИЕ ({abs(offset)}мин до дедлайна)\n"
                     f"📌 {email.subject or 'Важное письмо'}\n"
                     f"📅 Дедлайн: {deadline_tz.strftime('%d.%m в %H:%M')}\n"
                     f"💡 {email.ai_summary or 'Нет саммари'}{acts}"
                 )
+                
                 try:
                     await api.messages.send(user_id=user.vk_user_id, random_id=0, message=msg)
                     logger.info("Sent reminder to vk=%s for email=%s (offset=%s)", user.vk_user_id, email.id, offset)
+                    
                     sent_offsets.append(str(offset))
                     email.reminder_sent = json.dumps(sent_offsets)
                     email.last_reminder_at = datetime.now(self.tz)
                 except Exception as e:
                     logger.warning(f"Failed to send reminder for email {email.id}: {e}")
-                break  # отправляем только одно напоминание за цикл
+                
+                break
 
     def _parse_deadline(self, deadline_str: str | None) -> datetime | None:
         if not deadline_str: return None
@@ -2046,7 +2160,13 @@ class ReminderService:
             logger.warning(f"Invalid deadline format: {deadline_str}")
             return None
 
-reminder_service = ReminderService()
+_reminder_instance: "ReminderService | None" = None
+
+def get_reminder_service() -> "ReminderService":
+    global _reminder_instance
+    if _reminder_instance is None:
+        _reminder_instance = ReminderService()
+    return _reminder_instance
 
 ================================================================================
 # FILE: services/user_service.py

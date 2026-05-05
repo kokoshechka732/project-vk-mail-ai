@@ -30,10 +30,10 @@ class AIClient:
         self.client = httpx.AsyncClient(timeout=httpx.Timeout(45.0), verify=verify_ssl)
 
     async def classify_email(
-        self, 
-        subject: Optional[str], 
+        self,
+        subject: Optional[str],
         from_email: Optional[str],
-        received_at: Optional[str], 
+        received_at: Optional[str],
         body_snippet: Optional[str],
         user_folders: List[str] | None = None,
         user_rules: List[Dict[str, str]] | None = None
@@ -56,15 +56,28 @@ class AIClient:
         
         try:
             r = await self.client.post(url, headers=headers, json=body)
+            # Проверяем статус код явно для лучшего лога
+            if r.status_code != 200:
+                logger.error(f"AI API returned status {r.status_code}: {r.text[:200]}")
+                raise RuntimeError(f"API Error {r.status_code}")
+                
             r.raise_for_status()
             content = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
             if not content:
                 raise ValueError("Empty LLM response")
-        except Exception as e:
-            logger.error("AI request failed: %s", e)
+        except httpx.ConnectError as e:
+            logger.error(f"AI Connection Error: {e}")
             raise
-            
+        except httpx.TimeoutException as e:
+            logger.error(f"AI Timeout Error: {e}")
+            raise
+        except Exception as e:
+            # Логируем полный traceback или детали, если они есть
+            logger.error(f"AI request failed with exception type {type(e).__name__}: {str(e)}")
+            raise
+
         candidate = _extract_json(content)
+        
         try:
             obj = json.loads(candidate)
         except json.JSONDecodeError:

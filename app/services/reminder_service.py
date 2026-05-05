@@ -1,9 +1,11 @@
+# app/services/reminder_service.py
 import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from sqlalchemy import select
+from sqlalchemy import select, func, cast
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from vkbottle import API
 from app.core.settings import settings
 from app.db.session import AsyncSessionMaker
@@ -15,7 +17,11 @@ logger = logging.getLogger("reminder")
 class ReminderService:
     def __init__(self) -> None:
         self._running = False
-        self.tz = ZoneInfo(settings.USER_TIMEZONE)
+        try:
+            self.tz = ZoneInfo(settings.USER_TIMEZONE)
+        except Exception:
+            logger.warning(f"❌ Timezone '{settings.USER_TIMEZONE}' not found. Falling back to UTC.")
+            self.tz = ZoneInfo("UTC")
 
     def start(self, api: API, interval_sec: int | None = None) -> None:
         if self._running: return
@@ -37,13 +43,23 @@ class ReminderService:
 
     async def _check_and_send(self, api: API) -> None:
         now_tz = datetime.now(self.tz)
+        
+        # Вычисляем дату 3 дня назад в Python, чтобы избежать сложных SQL-функций
+        # Это работает одинаково для SQLite и PostgreSQL
+        cutoff_date = now_tz - timedelta(days=3)
+
         async with AsyncSessionMaker() as session:
-            # ✅ ТОЛЬКО HIGH + есть дедлайн + не все напоминания отправлены
+            # Используем стандартные фильтры SQLAlchemy
             stmt = select(Email).where(
                 Email.ai_importance == "high",
                 Email.ai_deadline.isnot(None),
-                Email.folder_id.isnot(None)
+                Email.folder_id.isnot(None),
+                # Фильтруем письма, чей дедлайн больше чем 3 дня назад
+                # Так как ai_deadline хранится как строка "YYYY-MM-DD HH:MM", 
+                # мы можем сравнивать строки напрямую, так как формат ISO сортируется лексикографически верно
+                Email.ai_deadline >= cutoff_date.strftime("%Y-%m-%d %H:%M")
             )
+            
             result = await session.execute(stmt)
             emails = result.scalars().all()
             
@@ -57,39 +73,45 @@ class ReminderService:
     async def _process_email(self, api: API, session, email: Email, now: datetime) -> None:
         deadline_dt = self._parse_deadline(email.ai_deadline)
         if not deadline_dt: return
-
+        
         deadline_tz = deadline_dt.replace(tzinfo=self.tz)
+        
         diff_minutes = (deadline_tz - now).total_seconds() / 60
+        
         sent_offsets = json.loads(email.reminder_sent or "[]")
-
+        
         for offset in settings.REMINDER_OFFSETS_MINUTES:
             if str(offset) in sent_offsets: continue
+            
             target_diff = offset
             if abs(diff_minutes - target_diff) <= (settings.REMINDER_TOLERANCE_SEC / 60):
                 user = await session.get(User, email.user_id)
                 if not user: continue
-
+                
                 acts = ""
                 try:
                     a = json.loads(email.ai_actions or "[]")
                     acts = f"\n👉 Действия: {', '.join(a)}" if a else ""
                 except: pass
-
+                
                 msg = (
                     f"⏰ НАПОМИНАНИЕ ({abs(offset)}мин до дедлайна)\n"
                     f"📌 {email.subject or 'Важное письмо'}\n"
                     f"📅 Дедлайн: {deadline_tz.strftime('%d.%m в %H:%M')}\n"
                     f"💡 {email.ai_summary or 'Нет саммари'}{acts}"
                 )
+                
                 try:
                     await api.messages.send(user_id=user.vk_user_id, random_id=0, message=msg)
                     logger.info("Sent reminder to vk=%s for email=%s (offset=%s)", user.vk_user_id, email.id, offset)
+                    
                     sent_offsets.append(str(offset))
                     email.reminder_sent = json.dumps(sent_offsets)
                     email.last_reminder_at = datetime.now(self.tz)
                 except Exception as e:
                     logger.warning(f"Failed to send reminder for email {email.id}: {e}")
-                break  # отправляем только одно напоминание за цикл
+                
+                break
 
     def _parse_deadline(self, deadline_str: str | None) -> datetime | None:
         if not deadline_str: return None
@@ -101,4 +123,10 @@ class ReminderService:
             logger.warning(f"Invalid deadline format: {deadline_str}")
             return None
 
-reminder_service = ReminderService()
+_reminder_instance: "ReminderService | None" = None
+
+def get_reminder_service() -> "ReminderService":
+    global _reminder_instance
+    if _reminder_instance is None:
+        _reminder_instance = ReminderService()
+    return _reminder_instance

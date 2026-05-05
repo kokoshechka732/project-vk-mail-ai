@@ -1,25 +1,41 @@
 from pathlib import Path
+import time
 
-ROOT = Path(r"C:\Users\me\Desktop\Project\project-vk-mail-ai\app")
-OUT  = ROOT / "all_python_sources.txt"
-SEP  = "\n" + ("=" * 80) + "\n"
+# 🔹 Автоматически определяем корень проекта (где лежит папка app/)
+ROOT = Path(__file__).resolve().parent
+APP_DIR = ROOT / "app"
+OUT_FILE = ROOT / "all_python_sources.txt"
+SEP = "\n" + "=" * 80 + "\n"
 
-if not ROOT.exists():
-    raise SystemExit(f"Папка не найдена: {ROOT}")
+if not APP_DIR.is_dir():
+    print(f"❌ Папка app/ не найдена в {ROOT}")
+    exit(1)
 
-py_files = sorted(p for p in ROOT.rglob("*.py") if p.is_file() and p != OUT)
+# 🔹 Исключаем мусор
+IGNORE_DIRS = {"__pycache__", ".venv", "venv", "env", "logs", "tests", ".git"}
 
-print(f"Найдено .py файлов: {len(py_files)}")
-print(f"Файл результата будет: {OUT}")
+py_files = []
+for p in APP_DIR.rglob("*.py"):
+    parts = p.relative_to(APP_DIR).parts
+    if not any(ignore in parts for ignore in IGNORE_DIRS):
+        py_files.append(p)
 
-with OUT.open("w", encoding="utf-8") as out:
+py_files.sort(key=lambda x: x.relative_to(APP_DIR).as_posix())
+
+print(f"📂 Сканирую: {APP_DIR}")
+print(f"📄 Найдено файлов: {len(py_files)}")
+print(f"💾 Результат: {OUT_FILE}")
+
+with OUT_FILE.open("w", encoding="utf-8") as out:
     for i, p in enumerate(py_files):
-        if i:
+        if i > 0:
             out.write(SEP)
-        out.write(f"# FILE: {p.relative_to(ROOT).as_posix()}\n\n")
+        rel = p.relative_to(APP_DIR).as_posix()
+        mtime = time.ctime(p.stat().st_mtime)
+        out.write(f"# FILE: {rel}\n# MODIFIED: {mtime}\n\n")
         content = p.read_text(encoding="utf-8", errors="replace")
         out.write(content)
         if not content.endswith("\n"):
             out.write("\n")
 
-print("Готово.")
+print("✅ Готово. Файл актуализирован.")

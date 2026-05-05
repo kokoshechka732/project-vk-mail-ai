@@ -32,6 +32,9 @@ class FolderRepository:
             folder.description = description
             await session.flush()
     async def ensure_system_folders(self, session: AsyncSession, user_id: int) -> dict[str, Folder]:
+        # 🔽 Чистим сироты один раз за сессию
+        await self.clean_orphaned_links(session)
+        
         existing = await self.list_by_user(session, user_id)
         by_name = {f.name: f for f in existing}
         for name in SYSTEM_FOLDERS:
@@ -68,3 +71,26 @@ class FolderRepository:
         await session.delete(folder)
         await session.flush()
         return True
+    async def clean_orphaned_links(self, session: AsyncSession) -> int:
+        """Удаляет email_folder_links и обнуляет emails.folder_id для несуществующих папок"""
+        from app.models.email_folder_link import EmailFolderLink
+        from app.models.email import Email
+        from sqlalchemy import delete, update
+        
+        # Сироты в связках
+        orphans_stmt = (
+            delete(EmailFolderLink)
+            .where(EmailFolderLink.folder_id.not_in(
+                select(Folder.id)
+            ))
+        )
+        res = await session.execute(orphans_stmt)
+        
+        # Сироты в emails.folder_id
+        await session.execute(
+            update(Email)
+            .where(Email.folder_id.not_in(select(Folder.id)))
+            .values(folder_id=None)
+        )
+        await session.flush()
+        return res.rowcount

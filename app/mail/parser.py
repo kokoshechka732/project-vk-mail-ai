@@ -1,7 +1,12 @@
 from email import message_from_bytes
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
+import logging
+from email import message_from_bytes
+from email.header import decode_header
+from email.utils import parseaddr, parsedate_to_datetime
 
+logger = logging.getLogger("parser")  
 
 def _decode_header(value: str | None) -> str | None:
     if not value:

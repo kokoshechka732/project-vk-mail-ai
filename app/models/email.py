@@ -24,3 +24,4 @@ class Email(Base):
     ai_classified_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_reminder_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    reminder_sent: Mapped[str] = mapped_column(Text, default="[]")
