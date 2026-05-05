@@ -7,12 +7,9 @@ def _get_cipher() -> Fernet:
     global _cipher
     if _cipher is None:
         key = settings.FERNET_KEY
-        if not key or len(key.strip()) < 32:
-            raise RuntimeError(
-                "❌ FERNET_KEY не указан или слишком короткий в .env!\n"
-                "Сгенерируйте: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
-            )
-        _cipher = Fernet(key.strip().encode())
+        if not key:
+            raise RuntimeError("❌ FERNET_KEY не найден в .env!")
+        _cipher = Fernet(key.encode())
     return _cipher
 
 def encrypt(text: str) -> str:

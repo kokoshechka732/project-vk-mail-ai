@@ -3,87 +3,110 @@
 import json
 import re
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 import httpx
 from app.core.settings import settings
-from app.ai.schemas import AIEmailClassification
+from app.ai.schemas import AIEmailClassification, FolderIntent
 from app.ai.prompts import build_messages
 
 logger = logging.getLogger("ai")
 _CODE_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
 _JSON_OBJECT_RE = re.compile(r"\{[\s\S]*\}", re.IGNORECASE)
 
-def _extract_json_candidate(text: str) -> str:
+def _extract_json(text: str) -> str:
     text = (text or "").strip()
-    if not text: return ""
     m = _CODE_FENCE_RE.search(text)
-    if m: return m.group(1).strip()
+    if m: 
+        return m.group(1).strip()
     m2 = _JSON_OBJECT_RE.search(text)
-    if m2: return m2.group(0).strip()
+    if m2: 
+        return m2.group(0).strip()
     return text
 
-def _looks_like_safety_stub(text: str) -> bool:
-    t = (text or "").strip().lower()
-    return t.startswith("safety:") or ("categories:" in t and "safety" in t)
-
-class PollinationsClient:
-    def __init__(self) -> None:
-        self.api_key = (settings.POLLINATIONS_API_KEY or "").strip()
-        self.base_url = (settings.POLLINATIONS_BASE_URL or "").strip().rstrip("/")
-        self.endpoint = (settings.POLLINATIONS_CHAT_ENDPOINT or "").strip()
-        self.model = (settings.POLLINATIONS_MODEL or "").strip()
-        self.verify_ssl = bool(settings.POLLINATIONS_VERIFY_SSL)
-
-        if not self.api_key: raise RuntimeError("POLLINATIONS_API_KEY is not set")
-        if not self.base_url: raise RuntimeError("POLLINATIONS_BASE_URL is not set")
-
-    @property
-    def url(self) -> str:
-        return f"{self.base_url}{self.endpoint}"
+class AIClient:
+    def __init__(self):
+        self.provider = settings.AI_PROVIDER.lower()
+        # 🔧 Явное определение переменной. 
+        # Для pollinations (HTTPS) проверяем SSL, для локального Ollama (HTTP) отключаем.
+        verify_ssl = self.provider == "pollinations"
+        self.client = httpx.AsyncClient(timeout=httpx.Timeout(45.0), verify=verify_ssl)
 
     async def classify_email(
-        self, subject: Optional[str], from_email: Optional[str],
-        received_at: Optional[str], body_snippet: Optional[str],
-        user_folders: List[str] | None = None, user_rules: List[Dict[str, str]] | None = None,
+        self, 
+        subject: Optional[str], 
+        from_email: Optional[str],
+        received_at: Optional[str], 
+        body_snippet: Optional[str],
+        user_folders: List[str] | None = None,
+        user_rules: List[Dict[str, str]] | None = None
     ) -> AIEmailClassification:
-        msgs = build_messages(
-            subject=subject, from_email=from_email, received_at=received_at,
-            body_snippet=body_snippet, user_folders=user_folders or [], user_rules=user_rules or [],
-        )
-        content = await self._chat_completion(msgs)
-        if _looks_like_safety_stub(content) or "{" not in (content or ""):
-            msgs2 = [dict(m) for m in msgs]
-            msgs2[0]["text"] = (
-                "КРИТИЧЕСКОЕ ПРАВИЛО: верни ТОЛЬКО один JSON-объект. "
-                "Ответ должен НАЧИНАТЬСЯ с '{' и ЗАКАНЧИВАТЬСЯ '}'. "
-                "Запрещено выводить строки вида 'Safety:' или 'Categories:' или любой иной текст.\n"
-                + msgs2[0]["text"]
-            )
-            content = await self._chat_completion(msgs2)
-
-        candidate = _extract_json_candidate(content)
+        msgs = build_messages(subject, from_email, received_at, body_snippet, user_folders or [], user_rules or [])
+        oa_messages = [{"role": m["role"], "content": m.get("text", "")} for m in msgs]
+        
+        if self.provider == "local":
+            url = settings.LOCAL_LLM_URL
+            model = settings.LOCAL_LLM_MODEL
+        else:
+            url = f"{settings.POLLINATIONS_BASE_URL}{settings.POLLINATIONS_CHAT_ENDPOINT}"
+            model = settings.POLLINATIONS_MODEL
+            
+        headers = {"Content-Type": "application/json"}
+        if settings.POLLINATIONS_API_KEY and self.provider != "local":
+            headers["Authorization"] = f"Bearer {settings.POLLINATIONS_API_KEY}"
+            
+        body = {"model": model, "messages": oa_messages, "temperature": 0.1, "max_tokens": 1000}
+        
+        try:
+            r = await self.client.post(url, headers=headers, json=body)
+            r.raise_for_status()
+            content = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+            if not content:
+                raise ValueError("Empty LLM response")
+        except Exception as e:
+            logger.error("AI request failed: %s", e)
+            raise
+            
+        candidate = _extract_json(content)
         try:
             obj = json.loads(candidate)
-        except Exception:
-            logger.error("Model returned non-JSON. content=%r", (content or "")[:800])
-            raise RuntimeError("Invalid JSON from LLM")
-
+        except json.JSONDecodeError:
+            logger.error("JSON parse failed. Raw: %s", content[:500])
+            raise RuntimeError("LLM returned invalid JSON")
+            
         return AIEmailClassification.model_validate(obj)
 
-    async def _chat_completion(self, msgs: list[dict]) -> str:
-        oa_messages = [{"role": m["role"], "content": m.get("text", "")} for m in msgs]
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
-        body = {"model": self.model, "messages": oa_messages, "temperature": 0, "max_tokens": 900}
-
-        async with httpx.AsyncClient(timeout=60.0, verify=self.verify_ssl) as client:
-            r = await client.post(self.url, headers=headers, json=body)
-            if r.status_code >= 400:
-                raise RuntimeError(f"Pollinations HTTP {r.status_code}: {r.text}")
-            data = r.json()
-            try:
-                return data["choices"][0]["message"]["content"]
-            except Exception as e:
-                raise RuntimeError(f"Unexpected response structure: {data}") from e
+    async def parse_folder_intent(self, user_text: str) -> FolderIntent:
+        prompt = (
+            "Извлеки из текста пользователя название папки, её цель и ключевые слова.\n"
+            "Верни СТРОГО JSON: {\"name\": \"...\", \"description\": \"...\", \"keywords\": [\"...\"]}.\n"
+            f"Текст: {user_text}"
+        )
+        msgs = [
+            {"role": "system", "content": "Ты парсер пользовательских интентов. Отвечай только JSON."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        if self.provider == "local":
+            url = settings.LOCAL_LLM_URL
+            model = settings.LOCAL_LLM_MODEL
+        else:
+            url = f"{settings.POLLINATIONS_BASE_URL}{settings.POLLINATIONS_CHAT_ENDPOINT}"
+            model = settings.POLLINATIONS_MODEL
+            
+        headers = {"Content-Type": "application/json"}
+        if settings.POLLINATIONS_API_KEY and self.provider != "local":
+            headers["Authorization"] = f"Bearer {settings.POLLINATIONS_API_KEY}"
+            
+        try:
+            r = await self.client.post(url, headers=headers, json={"model": model, "messages": msgs, "temperature": 0.1})
+            r.raise_for_status()
+            content = r.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error("AI folder intent request failed: %s", e)
+            raise
+            
+        raw = _extract_json(content)
+        return FolderIntent.model_validate(json.loads(raw))
 
 ================================================================================
 # FILE: ai/prompts.py
@@ -91,8 +114,8 @@ class PollinationsClient:
 import json
 from typing import Optional, List, Dict
 
-STANDARD_CATEGORIES = ["academic", "work", "events", "finance", "services", "spam", "personal", "other"]
-SYSTEM_FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное", "Спам"]
+# ✅ Синхронизировано с folder_repository.py
+SYSTEM_FOLDERS = ["Важное", "Учёба", "Работа"]
 
 def build_messages(
     subject: Optional[str],
@@ -105,51 +128,44 @@ def build_messages(
     user_folders = user_folders or []
     user_rules = user_rules or []
     allowed_folders = SYSTEM_FOLDERS + user_folders
-
+    
     payload = {
         "subject": subject or "",
         "from_email": from_email or "",
         "received_at": received_at or "",
         "body_snippet": (body_snippet or "")[:2000],
-        "standard_categories": STANDARD_CATEGORIES,
-        "user_folders": user_folders,
-        "user_rules": user_rules,
         "allowed_folders": allowed_folders,
+        "user_custom_folders": user_folders,
+        "user_rules": user_rules,
     }
-
+    
     system = (
-        "Ты — ассистент для классификации электронных писем студента.\n"
-        "Твоя задача: проанализировать письмо и вернуть JSON с его категорией, важностью, "
-        "кратким содержанием и ключевыми действиями.\n"
-        "Стандартные категории:\n"
-        '- "academic" — учёба, пары, дедлайны, оценки, расписание\n'
-        '- "work" — стажировки, вакансии, карьера, HR\n'
-        '- "events" — мероприятия, хакатоны, конференции, встречи\n'
-        '- "finance" — стипендии, оплаты, счета, налоги\n'
-        '- "services" — уведомления сервисов (GitHub, Google, Notion и т.п.)\n'
-        '- "spam" — реклама, рассылки, мусор\n'
-        '- "personal" — личные письма от людей\n'
-        '- "other" — всё остальное\n'
-        "Также учитывай пользовательские папки, если они переданы ниже.\n"
-        "Если письмо подходит под описание пользовательской папки — используй её название "
-        "в поле category вместо стандартной категории.\n"
-        "Уровень важности:\n"
-        '- "high" — срочное/важное/требует действий/дедлайн/личное обращение\n'
-        '- "medium" — полезно, но не критично\n'
-        '- "low" — можно игнорировать\n'
-        "Правила:\n"
-        "- Возвращай ТОЛЬКО JSON (без текста вокруг).\n"
-        "- summary: 1 предложение, по сути, до 150 символов.\n"
-        "- deadline: дата в формате YYYY-MM-DD или null.\n"
-        "- actions: массив строк действий (может быть []).\n"
-        "- suggested_folder: выбери строго одну папку из allowed_folders.\n"
-        "Формат ответа (строго JSON):\n"
-        '{"category":"...","importance":"low|medium|high","summary":"...",'
-        '"actions":["..."],"deadline":"YYYY-MM-DD"|null,"suggested_folder":"one of allowed_folders"}'
-    )
-
-    user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False)
-
+        "Ты — AI-ассистент для сортировки и анализа писем студента.\n"
+        "Верни СТРОГО валидный JSON. Без markdown, без комментариев, без пояснений.\n\n"
+        
+        "ДОСТУПНЫЕ ПАПКИ (suggested_folder обязан быть ОДНОЙ из них):\n"
+        "- Системные: \"Важное\", \"Учёба\", \"Работа\"\n"
+        "- Кастомные пользователя: {custom}\n\n"
+        
+        "ПРАВИЛА РАСПРЕДЕЛЕНИЯ:\n"
+        "1. \"Учёба\" -> вуз, деканат, расписание, пара, зачёт, экзамен, курсовая, библиотека, LMS, преподаватели.\n"
+        "2. \"Работа\" -> вакансии, стажировки, HR, собеседования, карьера, фриланс, бизнес-переписка.\n"
+        "3. \"Важное\" -> личная переписка, банки/налоги/госуслуги, срочные уведомления, всё требующее внимания.\n"
+        "4. Если письмо точно соответствует описанию/ключевым словам кастомной папки -> используй её.\n"
+        "5. Если не уверен -> \"Важное\".\n\n"
+        
+        "КАТЕГОРИЯ (category): academic, work, finance, services, spam, personal, other.\n"
+        "ВАЖНОСТЬ (importance): high (срочно/личное/требует действий), medium (информационное), low (рассылка/мусор).\n"
+        "Дедлайн (deadline): YYYY-MM-DD или null. ВНИМАНИЕ: ставь deadline ТОЛЬКО если importance = \"high\". Для medium/low всегда null.\n"
+        "Действия (actions): конкретные шаги или [].\n"
+        "Саммари (summary): 1 предложение, суть, <=150 символов.\n\n"
+        
+        "ФОРМАТ ОТВЕТА:\n"
+        '{"category":"...","importance":"...","summary":"...","actions":[],"deadline":"... или null","suggested_folder":"..."}'
+    ).format(custom="; ".join(user_folders) if user_folders else "(нет)")
+    
+    user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False, indent=2)
+    
     return [
         {"role": "system", "text": system},
         {"role": "user", "text": user},
@@ -163,17 +179,21 @@ from typing import Literal, Optional, List
 
 Importance = Literal["low", "medium", "high"]
 
-
 class AIEmailClassification(BaseModel):
     category: str = Field(
         ...,
-        description="academic|work|events|finance|services|spam|personal|other OR custom folder name",
+        description="academic|work|events|finance|services|spam|personal|other OR custom folder name"
     )
     importance: Importance
-    summary: str  # 1 sentence <=150 chars (мы дополнительно обрежем)
+    summary: str  # 1 sentence <=150 chars
     actions: List[str] = Field(default_factory=list)
     deadline: Optional[str] = None  # YYYY-MM-DD or null
     suggested_folder: str
+
+class FolderIntent(BaseModel):
+    name: str = Field(..., description="Название папки (2-10 слов)")
+    description: str = Field(..., description="Развернутое описание целей папки")
+    keywords: List[str] = Field(default_factory=list, description="Ключевые слова для сортировки")
 
 ================================================================================
 # FILE: bot/bot.py
@@ -222,15 +242,29 @@ class InsecureAiohttpClient:
 
 from vkbottle import Keyboard, Text, KeyboardButtonColor
 
+def _safe_label(text: str, max_len: int = 38) -> str:
+    """Жёсткая защита от VK API лимита 40 символов"""
+    return (text or "")[:max_len].strip()
+
 def main_menu_json() -> str:
     kb = Keyboard(one_time=False)
-    kb.add(Text("Подключить Gmail"), color=KeyboardButtonColor.PRIMARY)
-    kb.add(Text("Проверить почту"), color=KeyboardButtonColor.POSITIVE)
+    kb.add(Text(_safe_label("Подключить Gmail")), color=KeyboardButtonColor.PRIMARY)
+    # 🔽 Кнопка "Проверить почту" удалена (сканирование фоновое)
     kb.row()
-    kb.add(Text("Мои папки"), color=KeyboardButtonColor.SECONDARY)
-    kb.add(Text("Дайджест"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text(_safe_label("Мои папки")), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text(_safe_label("Дайджест")), color=KeyboardButtonColor.SECONDARY)
     kb.row()
-    kb.add(Text("Помощь"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text(_safe_label("Помощь")), color=KeyboardButtonColor.SECONDARY)
+    return kb.get_json()
+
+def email_nav_json(total: int, current: int) -> str:
+    kb = Keyboard(one_time=False)
+    kb.add(Text("Назад"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text(f"{current+1}/{total}"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Далее"), color=KeyboardButtonColor.SECONDARY)
+    kb.row()
+    # 🔽 Заглушка и ссылка удалены. Теперь всегда кнопка возврата.
+    kb.add(Text("Папки"), color=KeyboardButtonColor.POSITIVE)
     return kb.get_json()
 
 def cancel_menu_json() -> str:
@@ -245,18 +279,28 @@ def yes_no_menu_json() -> str:
 def folders_menu_json(names: list[str], can_create: bool) -> str:
     kb = Keyboard(one_time=False)
     for i, n in enumerate(names):
-        kb.add(Text(n), color=KeyboardButtonColor.PRIMARY)
+        kb.add(Text(_safe_label(n)), color=KeyboardButtonColor.PRIMARY)
         if i % 2 == 1: kb.row()
     if can_create:
-        kb.row().add(Text("Создать мою папку"), color=KeyboardButtonColor.POSITIVE)
+        kb.row().add(Text("Создать папку"), color=KeyboardButtonColor.POSITIVE)
     kb.row().add(Text("Назад в меню"), color=KeyboardButtonColor.SECONDARY)
     return kb.get_json()
 
 def custom_folder_actions_json(name: str) -> str:
     kb = Keyboard(one_time=False)
-    kb.add(Text(f"Показать: {name}"), color=KeyboardButtonColor.PRIMARY).row()
-    kb.add(Text(f"Ключевые слова: {name}"), color=KeyboardButtonColor.SECONDARY).row()
+    kb.add(Text(_safe_label(f"Открыть: {name}")), color=KeyboardButtonColor.PRIMARY).row()
+    kb.add(Text("Удалить папку"), color=KeyboardButtonColor.NEGATIVE).row()
     kb.add(Text("Назад к папкам"), color=KeyboardButtonColor.SECONDARY)
+    return kb.get_json()
+
+def email_nav_json(total: int, current: int) -> str:
+    kb = Keyboard(one_time=False)
+    kb.add(Text("Назад"), color=KeyboardButtonColor.SECONDARY)
+    kb.add(Text(f"{current+1}/{total}"), color=KeyboardButtonColor.PRIMARY)
+    kb.add(Text("Далее"), color=KeyboardButtonColor.SECONDARY)
+    kb.row()
+    # 🔽 Вместо заглушки/ссылки теперь всегда кнопка возврата в папки
+    kb.add(Text("Папки"), color=KeyboardButtonColor.POSITIVE)
     return kb.get_json()
 
 ================================================================================
@@ -269,42 +313,32 @@ import sys
 from pathlib import Path
 import truststore
 truststore.inject_into_ssl()
-
 from vkbottle import API
 from vkbottle.bot import Bot, Message
-
 from app.core.settings import settings
+from app.db.session import AsyncSessionMaker
 from app.bot.insecure_http import InsecureAiohttpClient
-from app.bot.keyboards import (
-    main_menu_json,
-    cancel_menu_json,
-    yes_no_menu_json,
-    folders_menu_json,
-    custom_folder_actions_json,
-)
+from app.bot.keyboards import main_menu_json, cancel_menu_json, yes_no_menu_json, folders_menu_json, custom_folder_actions_json, email_nav_json
 from app.services.user_service import UserService
 from app.services.mail_service import MailService
 from app.services.email_service import EmailService
 from app.services.account_info_service import AccountInfoService
 from app.services.folder_view_service import FolderViewService
 from app.services.folder_service import FolderService
+from app.bot.keyboards import (
+    main_menu_json, cancel_menu_json, yes_no_menu_json,
+    folders_menu_json, custom_folder_actions_json, email_nav_json
+)
+from app.db.session import AsyncSessionMaker
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8"),
-    ],
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8")])
 logger = logging.getLogger("app")
 logger.info("Bot starting...")
 
 api = API(token=settings.VK_BOT_TOKEN, http_client=InsecureAiohttpClient())
 bot = Bot(api=api)
-
 user_service = UserService()
 mail_service = MailService()
 email_service = EmailService()
@@ -312,46 +346,76 @@ info_service = AccountInfoService()
 folder_view = FolderViewService()
 folder_service = FolderService()
 
-# ---------------- STATE (MVP: in-memory) ----------------
 state: dict[int, dict] = {}
-
 def set_state(vk_user_id: int, name: str | None, data: dict | None = None) -> None:
-    if name is None:
-        state.pop(vk_user_id, None)
-    else:
-        state[vk_user_id] = {"name": name, "data": data or {}}
-
+    if name is None: state.pop(vk_user_id, None)
+    else: state[vk_user_id] = {"name": name, "data": data or {}}
 def get_state_name(vk_user_id: int) -> str | None:
     s = state.get(vk_user_id)
     return s["name"] if s else None
-
 def get_state_data(vk_user_id: int) -> dict:
     s = state.get(vk_user_id)
     return s["data"] if s else {}
 
-# --------------- Background polling ---------------
 _BG_STARTED = False
-
 def start_background_tasks() -> None:
     global _BG_STARTED
-    if _BG_STARTED:
-        return
+    if _BG_STARTED: return
     _BG_STARTED = True
-    bot.loop_wrapper.add_task(email_service.poll_new_emails_forever(api=api, interval_sec=300))
-    logger.info("Background polling task started (every 5 minutes).")
+    # 🔽 Исправлено на 60 секунд
+    bot.loop_wrapper.add_task(email_service.poll_new_emails_forever(api=api, interval_sec=60))
+    logger.info("Background polling task started (every 1 minute).")
 
+async def _render_email_page(message: Message, vk_user_id: int):
+    st = get_state_data(vk_user_id)
+    if not st or "email_ids" not in st:
+        set_state(vk_user_id, None)
+        await message.answer("Навигация сброшена. Выберите папку заново.", keyboard=main_menu_json())
+        return
+
+    folder_name = st["folder_name"]
+    email_ids = st["email_ids"]
+    idx = st["current_index"]
+    
+    if not email_ids:
+        set_state(vk_user_id, None)
+        await message.answer("📭 Папка пуста.", keyboard=main_menu_json())
+        return
+        
+    try:
+        async with AsyncSessionMaker() as session:
+            async with session.begin():
+                user = await user_service.repo.get_by_vk_id(session, vk_user_id)
+                if not user: return
+                email = await folder_view.get_email_by_index(session, user.id, email_ids, idx)
+    except Exception:
+        set_state(vk_user_id, None)
+        await message.answer("Не удалось загрузить письмо.", keyboard=main_menu_json())
+        return
+
+    if not email:
+        set_state(vk_user_id, None)
+        await message.answer("Письмо не найдено.", keyboard=main_menu_json())
+        return
+
+    subj = email.subject or "(без темы)"
+    frm = email.from_email or "(неизвестно)"
+    dt = email.received_at.strftime("%d.%m %H:%M") if email.received_at else "?"
+    summ = email.ai_summary or "Саммари ещё не сформировано."
+
+    # 🔽 Ссылка полностью удалена из текста
+    txt = f"[{folder_name}]\n👤 {frm}\n🕒 {dt}\n📝 {subj}\n💡 {summ}"
+    await message.answer(txt, keyboard=email_nav_json(len(email_ids), idx))
 @bot.on.message()
 async def router(message: Message):
     start_background_tasks()
     vk_user_id = message.from_id
     text = (message.text or "").strip()
     t = text.casefold()
-
     await user_service.ensure_user(vk_user_id)
     st_name = get_state_name(vk_user_id)
     st_data = get_state_data(vk_user_id)
 
-    # ===== global commands =====
     if t == "отмена":
         set_state(vk_user_id, None)
         await message.answer("Ок, отменил.", keyboard=main_menu_json())
@@ -361,25 +425,12 @@ async def router(message: Message):
         await message.answer("Привет! Выбери действие:", keyboard=main_menu_json())
         return
     if t == "помощь":
-        await message.answer(
-            "Кнопки:\n"
-            "- Подключить Gmail\n"
-            "- Проверить почту\n"
-            "- Дайджест\n"
-            "- Мой Gmail\n"
-            "- Мои папки\n"
-            "- Сортировать 25 (разложить последние 25 писем в БД по папкам)\n"
-            "- DEBUG: письма (показать заголовки последних писем из Gmail)\n"
-            "Для Gmail нужен App Password (пароль приложения) при включенной 2FA.",
-            keyboard=main_menu_json(),
-        )
+        await message.answer("Кнопки: Подключить Gmail, Проверить почту, Мои папки, Дайджест. Для Gmail нужен App Password при включенной 2FA.", keyboard=main_menu_json())
         return
     if t == "назад в меню":
         set_state(vk_user_id, None)
         await message.answer("Меню:", keyboard=main_menu_json())
         return
-
-    # ===== always-available buttons =====
     if t == "мой gmail":
         msg = await info_service.get_gmail_info(vk_user_id)
         await message.answer(msg, keyboard=main_menu_json())
@@ -388,10 +439,7 @@ async def router(message: Message):
         acc = await folder_service.get_active_gmail_account(vk_user_id)
         if acc:
             set_state(vk_user_id, "wait_reconnect_confirm", {"email": acc.email_address})
-            await message.answer(
-                f"Уже подключено: {acc.email_address}\nПереподключить? (Да/Нет)",
-                keyboard=yes_no_menu_json(),
-            )
+            await message.answer(f"Уже подключено: {acc.email_address}\nПереподключить? (Да/Нет)", keyboard=yes_no_menu_json())
             return
         set_state(vk_user_id, "wait_gmail_email", {})
         await message.answer("Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
@@ -399,18 +447,9 @@ async def router(message: Message):
     if t == "проверить почту":
         await message.answer("Проверяю новые письма...")
         saved, code = await email_service.sync_new(vk_user_id)
-        if code == "NO_MAIL":
-            await message.answer("Сначала подключи Gmail (кнопка «Подключить Gmail»).", keyboard=main_menu_json())
-            return
-        if code == "IMAP_TIMEOUT":
-            await message.answer("Gmail отвечает слишком долго. Попробуй ещё раз позже.", keyboard=main_menu_json())
-            return
-        if code == "IMAP_ERROR":
-            await message.answer("Не удалось получить письма из Gmail (ошибка IMAP).", keyboard=main_menu_json())
-            return
-        if code != "OK":
-            await message.answer("Не удалось проверить почту.", keyboard=main_menu_json())
-            return
+        if code == "NO_MAIL": await message.answer("Сначала подключи Gmail.", keyboard=main_menu_json()); return
+        if code == "IMAP_TIMEOUT": await message.answer("Gmail отвечает слишком долго.", keyboard=main_menu_json()); return
+        if code == "IMAP_ERROR": await message.answer("Ошибка IMAP.", keyboard=main_menu_json()); return
         await message.answer(f"Готово! Новых писем: {saved}", keyboard=main_menu_json())
         return
     if t == "дайджест":
@@ -418,156 +457,188 @@ async def router(message: Message):
         await message.answer(digest_text, keyboard=main_menu_json())
         return
 
-    # ===== Gmail connect states =====
     if st_name == "wait_reconnect_confirm":
-        if t == "да":
-            set_state(vk_user_id, "wait_gmail_email", {})
-            await message.answer("Ок. Введи Gmail адрес (пример: student@gmail.com).", keyboard=cancel_menu_json())
-            return
-        if t == "нет":
-            set_state(vk_user_id, None)
-            await message.answer("Ок. Оставил текущий Gmail без изменений.", keyboard=main_menu_json())
-            return
-        await message.answer("Ответь «Да» или «Нет» (или «Отмена»).", keyboard=yes_no_menu_json())
-        return
+        if t == "да": set_state(vk_user_id, "wait_gmail_email", {}); await message.answer("Введи Gmail адрес:", keyboard=cancel_menu_json()); return
+        if t == "нет": set_state(vk_user_id, None); await message.answer("Ок.", keyboard=main_menu_json()); return
+        await message.answer("Ответь «Да» или «Нет».", keyboard=yes_no_menu_json()); return
     if st_name == "wait_gmail_email":
         email = text.strip()
-        if "@" not in email or "." not in email:
-            await message.answer("Похоже, это не email. Введи Gmail адрес ещё раз:", keyboard=cancel_menu_json())
-            return
+        if "@" not in email or "." not in email: await message.answer("Это не email. Повтори:", keyboard=cancel_menu_json()); return
         st_data["email"] = email
         set_state(vk_user_id, "wait_gmail_pass", st_data)
-        await message.answer(
-            "Теперь введи пароль приложения Gmail (App Password). Можно с пробелами — я их уберу.",
-            keyboard=cancel_menu_json(),
-        )
+        await message.answer("Введи App Password:", keyboard=cancel_menu_json())
         return
     if st_name == "wait_gmail_pass":
         app_pass = text
         email = st_data.get("email")
-        if not email:
-            set_state(vk_user_id, "wait_gmail_email", {})
-            await message.answer("Не нашёл email. Введи Gmail адрес заново:", keyboard=cancel_menu_json())
-            return
-        await message.answer("Проверяю доступ к Gmail по IMAP...")
+        if not email: set_state(vk_user_id, "wait_gmail_email", {}); await message.answer("Введи email заново:", keyboard=cancel_menu_json()); return
+        await message.answer("Проверяю доступ...")
         ok, code = await mail_service.connect_gmail(vk_user_id, email, app_pass)
         set_state(vk_user_id, None)
-        if not ok:
-            if code == "AUTH_ERROR":
-                await message.answer(
-                    "Не удалось войти. Проверь Gmail адрес и App Password.",
-                    keyboard=main_menu_json(),
-                )
-            elif code == "TIMEOUT":
-                await message.answer("Gmail не ответил вовремя. Попробуй позже.", keyboard=main_menu_json())
-            else:
-                await message.answer("Не удалось подключить Gmail (неизвестная ошибка).", keyboard=main_menu_json())
-            return
-        await message.answer("Gmail подключен. Скачиваю последние 15 писем и делаю разбор...")
-        saved, sync_code = await email_service.sync_after_connect(vk_user_id, n=15)
-        if sync_code == "OK":
-            await message.answer(f"Готово! Новых писем сохранено и обработано: {saved}", keyboard=main_menu_json())
-        else:
-            await message.answer("Gmail подключен, но не удалось сразу скачать письма.", keyboard=main_menu_json())
+        if not ok: await message.answer("Ошибка входа. Проверь данные.", keyboard=main_menu_json()); return
+        await message.answer("Gmail подключен. Скачиваю последние 15 писем...")
+        saved, _ = await email_service.sync_after_connect(vk_user_id, n=15)
+        await message.answer(f"Готово! Обработано: {saved}", keyboard=main_menu_json())
         return
 
-    # ===== Folders UI =====
     if t == "мои папки":
-        folder_names, can_create_custom, custom_name = await folder_service.get_folder_menu_info(vk_user_id)
-        set_state(vk_user_id, "folders_menu", {"custom_name": custom_name})
-        await message.answer(
-            "Выбери папку:",
-            keyboard=folders_menu_json(folder_names, can_create_custom),
-        )
+        folder_names, can_create, custom_names = await folder_service.get_folder_menu_info(vk_user_id)
+        set_state(vk_user_id, "folders_menu", {"custom_names": custom_names})
+        await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
         return
     if st_name == "folders_menu":
-        folder_names, can_create_custom, custom_name = await folder_service.get_folder_menu_info(vk_user_id)
-        if t == "создать мою папку":
-            if not can_create_custom:
-                await message.answer("Кастомная папка уже создана.", keyboard=folders_menu_json(folder_names, False))
+        folder_names, can_create, custom_names = await folder_service.get_folder_menu_info(vk_user_id)
+        set_state(vk_user_id, "folders_menu", {"custom_names": custom_names})
+        
+        if t == "создать папку":
+            if not can_create:
+                await message.answer(f"Лимит: 3 кастомные папки. Удали одну.", keyboard=folders_menu_json(folder_names, False))
                 return
-            set_state(vk_user_id, "wait_custom_folder_name", {})
-            await message.answer("Введи название твоей папки (одна папка на пользователя):", keyboard=cancel_menu_json())
+            set_state(vk_user_id, "wait_custom_desc", {})
+            await message.answer("Опиши, что складывать сюда.\nПример: «хакатоны, олимпиады, стажировки в IT»", keyboard=cancel_menu_json())
             return
-        # Нажатие на папку — точное или нечувствительное к регистру сравнение
-        matched_folder = None
-        if text in folder_names:
-            matched_folder = text
-        else:
-            for fn in folder_names:
-                if fn.casefold() == t:
-                    matched_folder = fn
-                    break
-        if matched_folder:
-            if custom_name and matched_folder.casefold() == custom_name.casefold():
-                set_state(vk_user_id, "custom_folder_menu", {"custom_name": custom_name})
-                await message.answer(
-                    f"Папка «{custom_name}». Что сделать?",
-                    keyboard=custom_folder_actions_json(custom_name),
-                )
+
+        matched = next((fn for fn in folder_names if fn.strip().casefold() == t.strip().casefold()), None)
+        
+        if matched:
+            is_custom = matched.strip().casefold() in [n.strip().casefold() for n in custom_names]
+            if is_custom:
+                set_state(vk_user_id, "custom_folder_menu", {"custom_name": matched})
+                await message.answer(f"Папка «{matched}». Что сделать?", keyboard=custom_folder_actions_json(matched))
                 return
-            msg = await folder_view.last_emails_in_folder(vk_user_id, folder_name=matched_folder, limit=5)
-            await message.answer(
-                msg,
-                keyboard=folders_menu_json(folder_names, can_create_custom),
-            )
-            return
-        await message.answer(
-            "Выбери папку кнопкой или нажми «Назад в меню».",
-            keyboard=folders_menu_json(folder_names, can_create_custom),
-        )
-        return
-    if st_name == "wait_custom_folder_name":
-        name = text.strip()
-        if len(name) < 2:
-            await message.answer("Слишком коротко. Введи другое название:", keyboard=cancel_menu_json())
-            return
-        ok, msg = await folder_service.create_custom_folder(vk_user_id, name=name)
-        set_state(vk_user_id, None)
-        await message.answer(msg, keyboard=main_menu_json())
+
+            async with AsyncSessionMaker() as session:
+                async with session.begin():
+                    user = await user_service.repo.get_by_vk_id(session, vk_user_id)
+                    if not user: return
+                    email_ids = await folder_view.get_folder_email_ids(session, user.id, matched)
+                    if not email_ids:
+                        await message.answer(f"📭 Папка «{matched}» пуста.", keyboard=folders_menu_json(folder_names, can_create))
+                        return
+                    set_state(vk_user_id, "view_email_page", {"folder_name": matched, "email_ids": email_ids, "current_index": 0})
+                    await _render_email_page(message, vk_user_id)
+                    return
+        await message.answer("Выбери папку кнопкой или «Назад в меню».", keyboard=folders_menu_json(folder_names, can_create))
         return
     if st_name == "custom_folder_menu":
         custom_name = st_data.get("custom_name")
         if not custom_name:
             set_state(vk_user_id, None)
-            await message.answer("Не нашёл кастомную папку. Открой «Мои папки» заново.", keyboard=main_menu_json())
+            await message.answer("Папка не найдена.", keyboard=main_menu_json())
             return
+
         if t == "назад к папкам":
-            folder_names, can_create_custom, custom_name2 = await folder_service.get_folder_menu_info(vk_user_id)
-            set_state(vk_user_id, "folders_menu", {"custom_name": custom_name2})
-            await message.answer(
-                "Выбери папку:",
-                keyboard=folders_menu_json(folder_names, can_create_custom),
-            )
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            set_state(vk_user_id, "folders_menu", {})
+            await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
             return
-        if t == f"показать: {custom_name}".casefold():
-            msg = await folder_view.last_emails_in_folder(vk_user_id, folder_name=custom_name, limit=5)
-            await message.answer(msg, keyboard=custom_folder_actions_json(custom_name))
+
+        if t.startswith("открыть:"):
+            clicked_name = t.replace("открыть:", "").strip()
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            matched = next((fn for fn in folder_names if fn.strip().casefold() == clicked_name.strip().casefold()), None)
+            if matched:
+                async with AsyncSessionMaker() as session:
+                    async with session.begin():
+                        user = await user_service.repo.get_by_vk_id(session, vk_user_id)
+                        if not user: return
+                        email_ids = await folder_view.get_folder_email_ids(session, user.id, matched)
+                        if not email_ids:
+                            await message.answer(f"📭 Папка «{matched}» пуста. Возвращаюсь к списку папок.", keyboard=folders_menu_json(folder_names, can_create))
+                            set_state(vk_user_id, "folders_menu", {})
+                            return
+                        set_state(vk_user_id, "view_email_page", {"folder_name": matched, "email_ids": email_ids, "current_index": 0})
+                        await _render_email_page(message, vk_user_id)
+                        return
+
+        if t == "удалить папку":
+            async with AsyncSessionMaker() as session:
+                async with session.begin():
+                    user = await user_service.repo.get_by_vk_id(session, vk_user_id)
+                    if not user: return
+                    folder = await folder_service.folder_repo.get_by_name(session, user.id, custom_name)
+                    if folder:
+                        await folder_service.folder_repo.delete_custom_folder(session, user.id, folder.id)
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            set_state(vk_user_id, "folders_menu", {})
+            await message.answer(f"🗑 Папка «{custom_name}» удалена.", keyboard=folders_menu_json(folder_names, can_create))
             return
-        if t == f"добавить ключевые слова: {custom_name}".casefold():
-            set_state(vk_user_id, "wait_custom_keywords", {"custom_name": custom_name})
-            await message.answer(
-                "Введи ключевые слова через запятую.\nПример: оплата, invoice, дедлайн, стипендия",
-                keyboard=cancel_menu_json(),
-            )
-            return
-        await message.answer("Выбери действие кнопкой.", keyboard=custom_folder_actions_json(custom_name))
+
+        await message.answer("Выбери действие.", keyboard=custom_folder_actions_json(custom_name))
         return
-    if st_name == "wait_custom_keywords":
-        custom_name = st_data.get("custom_name")
-        if not custom_name:
+    if st_name == "view_email_page":
+        st = get_state_data(vk_user_id)
+        email_ids = st.get("email_ids", [])
+        idx = st.get("current_index", 0)
+        total = len(email_ids)
+
+        if total == 0:
             set_state(vk_user_id, None)
-            await message.answer("Не нашёл кастомную папку. Открой «Мои папки» заново.", keyboard=main_menu_json())
+            await message.answer("📭 Папка пуста.", keyboard=main_menu_json())
             return
-        keywords_raw = text.strip()
-        keywords = [k.strip() for k in keywords_raw.split(",")]
-        keywords = [k for k in keywords if k]
-        ok, msg = await folder_service.add_keywords_to_custom_folder(vk_user_id, keywords=keywords)
-        set_state(vk_user_id, "custom_folder_menu", {"custom_name": custom_name})
-        await message.answer(msg, keyboard=custom_folder_actions_json(custom_name))
+
+        # 🔽 Кнопка "Папки" → выбрасывает в выбор папок
+        if t == "папки":
+            folder_names, can_create, _ = await folder_service.get_folder_menu_info(vk_user_id)
+            set_state(vk_user_id, "folders_menu", {})
+            await message.answer("Выбери папку:", keyboard=folders_menu_json(folder_names, can_create))
+            return
+
+        # 🔽 Клик по кнопке "1/9" → подсказка ввода номера
+        if "/" in t and t.replace("/", "").replace(" ", "").isdigit():
+            await message.answer(f"Напишите номер письма, к которому хотите перейти (от 1 до {total}).", keyboard=cancel_menu_json())
+            return
+
+        # 🔽 Цикличная навигация (0-1 → n, n+1 → 0)
+        if t == "назад":
+            st["current_index"] = (idx - 1) % total
+            set_state(vk_user_id, "view_email_page", st)
+            await _render_email_page(message, vk_user_id)
+            return
+        elif t == "далее":
+            st["current_index"] = (idx + 1) % total
+            set_state(vk_user_id, "view_email_page", st)
+            await _render_email_page(message, vk_user_id)
+            return
+
+        # 🔽 Ввод номера вручную (после подсказки или напрямую)
+        if t.replace(" ", "").isdigit():
+            try:
+                num = int(t)
+                if 1 <= num <= total:
+                    st["current_index"] = num - 1
+                    set_state(vk_user_id, "view_email_page", st)
+                    await _render_email_page(message, vk_user_id)
+                    return
+            except ValueError:
+                pass
+
+        set_state(vk_user_id, "view_email_page", st)
+        await _render_email_page(message, vk_user_id)
+        return
+    if st_name == "wait_custom_desc":
+        raw = text.strip()
+        if len(raw) < 5: await message.answer("Описание слишком короткое:", keyboard=cancel_menu_json()); return
+        await message.answer("🤖 Анализирую описание и создаю папку...")
+        intent = await email_service.ai_client.parse_folder_intent(raw)
+        ok, msg = await folder_service.create_custom_folder_ai(vk_user_id, intent.name, intent.description, intent.keywords)
+        set_state(vk_user_id, None)
+        await message.answer(msg, keyboard=main_menu_json())
+        return
+    if st_name == "wait_email_number":
+        try:
+            num = int(text.strip())
+            st = get_state_data(vk_user_id)
+            if 1 <= num <= len(st["email_ids"]):
+                st["current_index"] = num - 1
+                set_state(vk_user_id, "view_email_page", st)
+                await _render_email_page(message, vk_user_id)
+                return
+        except ValueError: pass
+        await message.answer("Неверный формат:", keyboard=cancel_menu_json())
         return
 
-    await message.answer("Не понял. Нажми кнопку меню или напиши «Начать».", keyboard=main_menu_json())
+    await message.answer("Не понял. Нажми «Начать».", keyboard=main_menu_json())
 
 if __name__ == "__main__":
     bot.run_forever()
@@ -577,6 +648,7 @@ if __name__ == "__main__":
 
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -588,33 +660,34 @@ class Settings(BaseSettings):
 
     VK_BOT_TOKEN: str
     DATABASE_URL: str
+    
+    # 🔑 Ключ шифрования (ОБЯЗАТЕЛЬНО в .env)
+    FERNET_KEY: str = ""
+    
+    # 🤖 Выбор провайдера: "pollinations" (работает сейчас) или "local" (когда поднимешь Ollama)
+    AI_PROVIDER: str = "pollinations"
 
-    # Pollinations AI
+    # 🌐 Pollinations AI
     POLLINATIONS_API_KEY: str = ""
     POLLINATIONS_BASE_URL: str = "https://gen.pollinations.ai"
     POLLINATIONS_CHAT_ENDPOINT: str = "/v1/chat/completions"
     POLLINATIONS_MODEL: str = "openai"
     POLLINATIONS_VERIFY_SSL: bool = True
 
-    # Legacy Yandex (опционально)
-    YANDEX_API_KEY: str = ""
-    YANDEX_FOLDER_ID: str = ""
-    YANDEX_MODEL_NAME: str = "yandexgpt"
-    YANDEX_MODEL_VERSION: str = "latest"
-    YANDEX_ENDPOINT: str = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-    YANDEX_VERIFY_SSL: bool = True
-
-    # Безопасность (шифрование паролей)
-    FERNET_KEY: str = ""
-
-    # Локальная LLM (опционально)
-    USE_LOCAL_LLM: bool = False
+    # 🏠 Локальная LLM (Ollama)
     LOCAL_LLM_URL: str = "http://localhost:11434/v1/chat/completions"
     LOCAL_LLM_MODEL: str = "phi3:mini"
 
-    # Напоминания
+    # ⏰ Напоминания
     REMINDER_CHECK_INTERVAL_SEC: int = 3600
     REMINDER_COOLDOWN_HOURS: int = 6
+
+    @field_validator("FERNET_KEY")
+    @classmethod
+    def check_fernet_key(cls, v):
+        if not v or len(v.strip()) < 32:
+            raise ValueError("❌ FERNET_KEY не указан или слишком короткий в .env!")
+        return v.strip()
 
 settings = Settings()
 
@@ -823,13 +896,13 @@ class EmailRepository:
 ================================================================================
 # FILE: db/repositories/folder_repository.py
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.folder import Folder
 
-SYSTEM_FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное", "Спам"]
-
+# ✅ НОВЫЙ НАБОР ПАПОК ПО MVP
+SYSTEM_FOLDERS = ["Важное", "Учёба", "Работа"]
+MAX_CUSTOM_FOLDERS = 3
 
 class FolderRepository:
     async def list_by_user(self, session: AsyncSession, user_id: int) -> list[Folder]:
@@ -849,7 +922,13 @@ class FolderRepository:
         session.add(obj)
         await session.flush()
         return obj
-
+    # Вставьте этот метод внутрь класса FolderRepository
+    async def update_description(self, session: AsyncSession, folder_id: int, description: str | None) -> None:
+        """Обновляет описание папки"""
+        folder = await session.get(Folder, folder_id)
+        if folder:
+            folder.description = description
+            await session.flush()
     async def ensure_system_folders(self, session: AsyncSession, user_id: int) -> dict[str, Folder]:
         existing = await self.list_by_user(session, user_id)
         by_name = {f.name: f for f in existing}
@@ -858,23 +937,35 @@ class FolderRepository:
                 by_name[name] = await self.create(session, user_id, name, is_system=True)
         return by_name
 
-    async def get_custom_folder(self, session: AsyncSession, user_id: int) -> Folder | None:
+    async def get_custom_folders(self, session: AsyncSession, user_id: int) -> list[Folder]:
         res = await session.execute(
-            select(Folder)
-            .where(Folder.user_id == user_id, Folder.is_system == False)  # noqa: E712
-            .order_by(Folder.id.asc())
+            select(Folder).where(Folder.user_id == user_id, Folder.is_system == False)
         )
-        return res.scalars().first()
+        return list(res.scalars().all())
 
-    async def create_custom_folder(self, session: AsyncSession, user_id: int, name: str) -> tuple[bool, str, Folder | None]:
-        """
-        Создаёт единственную кастомную папку. Если уже есть — не создаёт.
-        """
-        existing = await self.get_custom_folder(session, user_id)
-        if existing:
-            return False, "CUSTOM_EXISTS", existing
-        obj = await self.create(session, user_id, name=name, is_system=False)
-        return True, "OK", obj
+    async def count_custom_folders(self, session: AsyncSession, user_id: int) -> int:
+        res = await session.execute(
+            select(func.count(Folder.id)).where(Folder.user_id == user_id, Folder.is_system == False)
+        )
+        return int(res.scalar_one() or 0)
+
+    async def delete_custom_folder(self, session: AsyncSession, user_id: int, folder_id: int) -> bool:
+        from app.models.email_folder_link import EmailFolderLink
+        from app.models.custom_rule import CustomRule
+        from sqlalchemy import delete
+        
+        folder = await session.get(Folder, folder_id)
+        if not folder or folder.is_system:
+            return False
+            
+        # 1. Удаляем связки email-folder
+        await session.execute(delete(EmailFolderLink).where(EmailFolderLink.folder_id == folder_id))
+        # 2. Удаляем кастомные правила папки
+        await session.execute(delete(CustomRule).where(CustomRule.folder_id == folder_id))
+        # 3. Удаляем саму папку
+        await session.delete(folder)
+        await session.flush()
+        return True
 
 ================================================================================
 # FILE: db/repositories/mail_account_repository.py
@@ -993,130 +1084,156 @@ AsyncSessionMaker = async_sessionmaker(
 
 import asyncio
 import imaplib
-import socket
-from typing import List, Tuple, Optional
+import logging
+import re
+from typing import List, Tuple
 
 GMAIL_HOST = "imap.gmail.com"
 GMAIL_PORT = 993
-
+logger = logging.getLogger("imap")
 
 def _check_gmail_imap_sync(email: str, password: str) -> tuple[bool, str]:
     try:
         mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=30)
         mail.login(email, password)
-        mail.select("INBOX")
+        status, _ = mail.select("INBOX")
+        if status != "OK":
+            mail.logout()
+            return False, "INBOX_ACCESS_DENIED"
         mail.logout()
         return True, "OK"
-    except imaplib.IMAP4.error:
+    except imaplib.IMAP4.error as e:
+        logger.warning("IMAP login error for %s: %s", email, e)
         return False, "AUTH_ERROR"
-    except (socket.timeout, TimeoutError):
-        return False, "TIMEOUT"
-    except Exception:
+    except Exception as e:
+        logger.error("IMAP check failed for %s: %s", email, e)
         return False, "UNKNOWN_ERROR"
-
 
 async def check_gmail_imap(email: str, password: str) -> tuple[bool, str]:
     return await asyncio.to_thread(_check_gmail_imap_sync, email, password)
 
+def _extract_uid_from_meta(meta: bytes) -> int:
+    match = re.search(rb"UID\s+(\d+)", meta)
+    return int(match.group(1)) if match else 0
 
-def _fetch_preview_by_uids_sync(
-    email: str,
-    password: str,
-    uid_list: list[bytes],
-    max_messages: int = 200,
-) -> List[Tuple[int, bytes, bytes]]:
-    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
-    mail.login(email, password)
-    mail.select("INBOX")
+def _clean_uids(uid_list: list[bytes]) -> list[str]:
+    """Фильтрует UID: оставляет только валидные целые числа."""
+    cleaned = []
+    for uid in uid_list:
+        decoded = uid.decode("ascii", errors="replace").strip()
+        if decoded.isdigit():
+            cleaned.append(decoded)
+    return cleaned
 
+def _fetch_preview_by_uids_sync(email: str, password: str, uid_list: list[bytes], max_messages: int = 200) -> List[Tuple[int, bytes, bytes]]:
     if not uid_list:
-        mail.logout()
         return []
 
-    # ограничим, чтобы не раздувать обработку
-    if len(uid_list) > max_messages:
-        uid_list = uid_list[-max_messages:]
+    valid_uids = _clean_uids(uid_list)
+    if not valid_uids:
+        return []
 
+    if len(valid_uids) > max_messages:
+        valid_uids = valid_uids[-max_messages:]
+
+    mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
     out: List[Tuple[int, bytes, bytes]] = []
-    fetch_query = "(BODY.PEEK[HEADER.FIELDS (SUBJECT FROM DATE MESSAGE-ID)] BODY.PEEK[TEXT]<0.4096>)"
+    try:
+        mail.login(email, password)
+        status, _ = mail.select("INBOX")
+        if status != "OK":
+            logger.error("❌ INBOX select failed for %s", email)
+            return []
 
-    for uid_b in uid_list:
-        uid = int(uid_b)
-        try:
-            st, msg_data = mail.uid("fetch", uid_b, fetch_query)
-            if st != "OK" or not msg_data:
+        # Уменьшаем чанк до 10 для стабильности парсера Gmail
+        for i in range(0, len(valid_uids), 10):
+            chunk = valid_uids[i:i+10]
+            uid_str = " ".join(chunk).strip()
+            if not uid_str:
                 continue
-            header_bytes: Optional[bytes] = None
-            text_bytes: Optional[bytes] = None
-            for item in msg_data:
-                if not isinstance(item, tuple) or len(item) < 2:
+
+            try:
+                status, data = mail.uid("fetch", uid_str, "(RFC822)")
+                if status != "OK" or not data:
+                    logger.warning("⚠️ Fetch returned non-OK for chunk starting at UID %s", chunk[0])
                     continue
-                meta: bytes = item[0] or b""
-                payload: bytes = item[1] or b""
-                meta_u = meta.upper()
-                if b"HEADER.FIELDS" in meta_u:
-                    header_bytes = payload
-                elif b"BODY[TEXT]" in meta_u:
-                    text_bytes = payload
-            out.append((uid, header_bytes or b"", text_bytes or b""))
-        except (socket.timeout, TimeoutError):
-            continue
-        except Exception:
-            continue
 
-    mail.logout()
+                for item in data:
+                    if not isinstance(item, tuple) or len(item) < 2:
+                        continue
+                    meta, raw_msg = item
+                    if not isinstance(raw_msg, bytes) or not raw_msg:
+                        continue
+                    uid_val = _extract_uid_from_meta(meta)
+                    out.append((uid_val, raw_msg, b""))
+            except imaplib.IMAP4.error as e:
+                logger.warning("⚠️ IMAP UID fetch error for %s: %s | Fallback to single UID...", email, e)
+                for u in chunk:
+                    try:
+                        st, dt = mail.uid("fetch", u, "(RFC822)")
+                        if st == "OK" and dt:
+                            for it in dt:
+                                if isinstance(it, tuple) and len(it) >= 2:
+                                    m, r = it
+                                    if isinstance(r, bytes) and r:
+                                        out.append((_extract_uid_from_meta(m), r, b""))
+                    except Exception:
+                        pass
+            except Exception as e:
+                logger.warning("⚠️ Chunk fetch failed for %s: %s", email, e)
+    except Exception as e:
+        logger.error("💥 IMAP connection error for %s: %s", email, e)
+    finally:
+        try: mail.logout()
+        except: pass
     return out
-
 
 def _fetch_last_n_gmail_preview_sync(email: str, password: str, n: int) -> List[Tuple[int, bytes, bytes]]:
     mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
-    mail.login(email, password)
-    mail.select("INBOX")
-
-    status, data = mail.uid("search", None, "ALL")
-    if status != "OK":
-        mail.logout()
+    try:
+        mail.login(email, password)
+        status, _ = mail.select("INBOX")
+        if status != "OK":
+            logger.error("❌ INBOX select failed for %s", email)
+            return []
+        status, data = mail.uid("search", None, "ALL")
+        if status != "OK" or not data or not data[0]:
+            return []
+        all_uids = data[0].split()
+        target = all_uids[-n:] if len(all_uids) > n else all_uids
+        return _fetch_preview_by_uids_sync(email, password, target, max_messages=n)
+    except Exception as e:
+        logger.error("❌ Fetch last %s failed for %s: %s", n, email, e)
         return []
-
-    uids = data[0].split() if data and data[0] else []
-    last_uids = uids[-n:] if len(uids) > n else uids
-    mail.logout()
-
-    return _fetch_preview_by_uids_sync(email, password, last_uids, max_messages=n)
-
+    finally:
+        try: mail.logout()
+        except: pass
 
 async def fetch_last_n_gmail_preview(email: str, password: str, n: int = 25) -> List[Tuple[int, bytes, bytes]]:
     return await asyncio.to_thread(_fetch_last_n_gmail_preview_sync, email, password, n)
 
-
-def _fetch_since_uid_sync(
-    email: str,
-    password: str,
-    since_uid: int,
-    max_messages: int = 200,
-) -> List[Tuple[int, bytes, bytes]]:
+def _fetch_since_uid_sync(email: str, password: str, since_uid: int, max_messages: int = 200) -> List[Tuple[int, bytes, bytes]]:
     mail = imaplib.IMAP4_SSL(GMAIL_HOST, GMAIL_PORT, timeout=90)
-    mail.login(email, password)
-    mail.select("INBOX")
-
-    start_uid = max(1, int(since_uid) + 1)
-    status, data = mail.uid("search", None, f"UID {start_uid}:*")
-    if status != "OK":
-        mail.logout()
+    try:
+        mail.login(email, password)
+        status, _ = mail.select("INBOX")
+        if status != "OK":
+            logger.error("❌ INBOX select failed for %s", email)
+            return []
+        start_uid = max(1, int(since_uid) + 1)
+        status, data = mail.uid("search", None, f"UID {start_uid}:*")
+        if status != "OK" or not data or not data[0]:
+            return []
+        uids = data[0].split()
+        return _fetch_preview_by_uids_sync(email, password, uids, max_messages=max_messages)
+    except Exception as e:
+        logger.error("❌ Fetch since UID failed for %s: %s", email, e)
         return []
+    finally:
+        try: mail.logout()
+        except: pass
 
-    uids = data[0].split() if data and data[0] else []
-    mail.logout()
-
-    return _fetch_preview_by_uids_sync(email, password, uids, max_messages=max_messages)
-
-
-async def fetch_since_uid_gmail_preview(
-    email: str,
-    password: str,
-    since_uid: int,
-    max_messages: int = 200,
-) -> List[Tuple[int, bytes, bytes]]:
+async def fetch_since_uid_gmail_preview(email: str, password: str, since_uid: int, max_messages: int = 200) -> List[Tuple[int, bytes, bytes]]:
     return await asyncio.to_thread(_fetch_since_uid_sync, email, password, since_uid, max_messages)
 
 ================================================================================
@@ -1161,31 +1278,48 @@ def _make_preview(text: str, max_lines: int = 20, max_chars: int = 1200) -> str:
     return preview
 
 
-def parse_email_preview(header_bytes: bytes, text_snippet_bytes: bytes) -> dict:
-    msg = message_from_bytes(header_bytes or b"")
+def parse_email_preview(raw_message_bytes: bytes, _unused: bytes) -> dict:
+    if not raw_message_bytes:
+        return {"message_id": None, "subject": None, "from_email": None, "received_at": None, "body_text": None, "has_attachments": False}
+        
+    try:
+        msg = message_from_bytes(raw_message_bytes)
+    except Exception as e:
+        logger.error("Failed to parse RFC822: %s", e)
+        return {"message_id": None, "subject": None, "from_email": None, "received_at": None, "body_text": None, "has_attachments": False}
+
     subject = _decode_header(msg.get("Subject"))
     message_id = msg.get("Message-ID")
-    _name, from_addr = parseaddr(msg.get("From", ""))
+    _, from_addr = parseaddr(msg.get("From", ""))
     from_email = from_addr or None
-
+    
     received_at = None
     raw_date = msg.get("Date")
     if raw_date:
-        try:
-            received_at = parsedate_to_datetime(raw_date)
-        except Exception:
-            received_at = None
-
-    raw_text = _decode_text_bytes(text_snippet_bytes or b"")
-    body_preview = _make_preview(raw_text)
-
+        try: received_at = parsedate_to_datetime(raw_date)
+        except: pass
+        
+    body_text = None
+    for part in msg.walk():
+        content_type = part.get_content_type()
+        if content_type == "text/plain":
+            payload = part.get_payload(decode=True)
+            if payload:
+                body_text = _decode_text_bytes(payload)
+                break
+        elif content_type == "text/html" and not body_text:
+            payload = part.get_payload(decode=True)
+            if payload:
+                body_text = _decode_text_bytes(payload)
+                break
+                
     return {
         "message_id": message_id,
         "subject": subject,
         "from_email": from_email,
         "received_at": received_at,
-        "body_text": body_preview or None,
-        "has_attachments": False,
+        "body_text": _make_preview(body_text or ""),
+        "has_attachments": any(p.get_filename() for p in msg.walk()),
     }
 
 ================================================================================
@@ -1271,18 +1405,17 @@ class EmailFolderLink(Base):
 ================================================================================
 # FILE: models/folder.py
 
-from sqlalchemy import DateTime, ForeignKey, String, Boolean, func
+from sqlalchemy import DateTime, ForeignKey, String, Boolean, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
-
 class Folder(Base):
     __tablename__ = "folders"
-
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 ================================================================================
@@ -1337,36 +1470,30 @@ class User(Base):
 ================================================================================
 # FILE: security/crypto.py
 
-import os
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
+from app.core.settings import settings
 
-_fernet: Fernet | None = None
-
-def _get_key() -> bytes:
-    """Возвращает ключ шифрования из окружения или генерирует новый."""
-    key = os.environ.get("FERNET_KEY")
-    if not key:
-        key = Fernet.generate_key().decode()
-        os.environ["FERNET_KEY"] = key
-    return key.encode() if len(key) == 44 else Fernet.generate_key()
+_cipher: Fernet | None = None
 
 def _get_cipher() -> Fernet:
-    global _fernet
-    if _fernet is None:
-        _fernet = Fernet(_get_key())
-    return _fernet
+    global _cipher
+    if _cipher is None:
+        key = settings.FERNET_KEY
+        if not key:
+            raise RuntimeError("❌ FERNET_KEY не найден в .env!")
+        _cipher = Fernet(key.encode())
+    return _cipher
 
 def encrypt(text: str) -> str:
-    """Шифрует строку и возвращает URL-safe base64 строку."""
-    if not text:
-        return ""
+    if not text: return ""
     return _get_cipher().encrypt(text.encode()).decode()
 
 def decrypt(token: str) -> str:
-    """Расшифровывает токен обратно в строку."""
-    if not token:
-        return ""
-    return _get_cipher().decrypt(token.encode()).decode()
+    if not token: return ""
+    try:
+        return _get_cipher().decrypt(token.encode()).decode()
+    except InvalidToken:
+        raise ValueError("Неверный ключ шифрования или повреждённые данные в БД.")
 
 ================================================================================
 # FILE: services/account_info_service.py
@@ -1404,8 +1531,7 @@ import logging
 from datetime import datetime, timezone
 from sqlalchemy import select
 from vkbottle import API
-
-from app.ai.client import PollinationsClient
+from app.ai.client import AIClient
 from app.core.settings import settings
 from app.db.init_db import ensure_schema
 from app.db.repositories.custom_rule_repository import CustomRuleRepository
@@ -1423,35 +1549,20 @@ from app.security.crypto import decrypt
 logger = logging.getLogger("email")
 
 def _truncate_vk(text: str, limit: int = 3500) -> str:
-    if len(text) <= limit:
-        return text
-    return text[: limit - 50] + "\n\n... (обрезано)"
+    return text if len(text) <= limit else text[:limit-50] + "\n... (обрезано)"
 
 def guess_folder_fallback(subject: str | None, from_email: str | None, body: str | None) -> str:
     s = (subject or "").casefold()
     f = (from_email or "").casefold()
     b = (body or "").casefold()
     text = " ".join([s, f, b])
-    if any(x in text for x in ["скидк", "sale", "распродаж", "купить", "промокод", "реклама"]) or "unsubscribe" in text:
-        return "Спам"
-    if any(x in s for x in ["стаж", "intern", "internship", "vacanc", "job", "карьер"]):
-        return "Стажировки"
-    if any(x in s for x in ["дедлайн", "deadline", "срок", "сдать", "экзамен"]):
-        return "Важное"
-    if any(x in f for x in ["no-reply", "noreply"]) or any(x in s for x in ["unsubscribe", "подписк", "рассыл"]):
-        return "Рассылки"
-    if any(x in s for x in ["лекц", "семинар", "пара", "курс", "учеб", "зачет", "зачёт"]):
-        return "Учёба"
-    return "Несортированное"
+    if any(x in text for x in ["дедлайн", "deadline", "срок", "сдать", "экзамен", "важно", "urgent"]): return "Важное"
+    if any(x in s for x in ["стаж", "intern", "vacanc", "job", "карьер", "работ"]): return "Работа"
+    if any(x in s for x in ["лекц", "семинар", "пара", "курс", "учеб", "зачет"]): return "Учёба"
+    return "Важное"
 
 def _need_important(ai_importance: str | None, deadline: str | None, actions: list[str] | None) -> bool:
-    if (ai_importance or "").lower() == "high":
-        return True
-    if deadline:
-        return True
-    if actions and len(actions) > 0:
-        return True
-    return False
+    return (ai_importance or "").lower() == "high" or bool(deadline) or bool(actions)
 
 class EmailService:
     def __init__(self) -> None:
@@ -1461,7 +1572,7 @@ class EmailService:
         self.folder_repo = FolderRepository()
         self.rule_repo = CustomRuleRepository()
         self.link_repo = EmailFolderLinkRepository()
-        self.ai_client = PollinationsClient()
+        self.ai_client = AIClient()
         self._poll_lock = asyncio.Lock()
 
     async def sync_after_connect(self, vk_user_id: int, n: int = 15) -> tuple[int, str]:
@@ -1469,22 +1580,21 @@ class EmailService:
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return 0, "NO_USER"
+                if not user: return 0, "NO_USER"
                 acc = await self.mail_repo.get_active_gmail(session, user.id)
-                if not acc:
-                    return 0, "NO_MAIL"
+                if not acc: return 0, "NO_MAIL"
                 await self.folder_repo.ensure_system_folders(session, user.id)
+                
                 try:
                     raw_list = await fetch_last_n_gmail_preview(acc.email_address, decrypt(acc.app_password), n=n)
-                except TimeoutError:
-                    return 0, "IMAP_TIMEOUT"
                 except Exception:
-                    logger.exception("IMAP error in sync_after_connect")
+                    logger.exception("IMAP fetch error for vk=%s", vk_user_id)
                     return 0, "IMAP_ERROR"
-                saved_new = await self._store_raw_only_new(vk_user_id, raw_list)
+                
+                # ✅ Передаём сессию вниз, чтобы избежать вложенности
+                saved_new = await self._store_raw_only_new(session, vk_user_id, raw_list)
                 uids = [uid for uid, _, _ in raw_list]
-                await self._ai_backfill_for_uids_robust(vk_user_id, uids=uids)
+                await self._ai_backfill_for_uids_robust(session, vk_user_id, uids)
                 return saved_new, "OK"
 
     async def sync_new(self, vk_user_id: int) -> tuple[int, str]:
@@ -1492,248 +1602,194 @@ class EmailService:
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return 0, "NO_USER"
+                if not user: return 0, "NO_USER"
                 acc = await self.mail_repo.get_active_gmail(session, user.id)
-                if not acc:
-                    return 0, "NO_MAIL"
+                if not acc: return 0, "NO_MAIL"
                 await self.folder_repo.ensure_system_folders(session, user.id)
                 max_uid = await self.email_repo.max_uid(session, acc.id)
+                
                 try:
-                    raw_list = await fetch_since_uid_gmail_preview(
-                        acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200
-                    )
-                except TimeoutError:
-                    return 0, "IMAP_TIMEOUT"
+                    raw_list = await fetch_since_uid_gmail_preview(acc.email_address, decrypt(acc.app_password), since_uid=max_uid, max_messages=200)
                 except Exception:
-                    logger.exception("IMAP error in sync_new")
+                    logger.exception("IMAP sync error for vk=%s", vk_user_id)
                     return 0, "IMAP_ERROR"
+                
                 saved = 0
                 if raw_list:
-                    saved = await self._store_raw_only_new(vk_user_id, raw_list)
+                    saved = await self._store_raw_only_new(session, vk_user_id, raw_list)
                     uids = [uid for uid, _, _ in raw_list]
-                    await self._ai_backfill_for_uids_robust(vk_user_id, uids=uids)
+                    await self._ai_backfill_for_uids_robust(session, vk_user_id, uids)
                 else:
-                    await self._ai_backfill_for_last(vk_user_id, limit=15)
+                    await self._ai_backfill_for_last(session, vk_user_id, limit=15)
                 return saved, "OK"
 
-    async def _store_raw_only_new(self, vk_user_id: int, raw_list: list[tuple[int, bytes, bytes]]) -> int:
-        await ensure_schema()
+    async def _store_raw_only_new(self, session, vk_user_id: int, raw_list: list[tuple[int, bytes, bytes]]) -> int:
+        user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+        if not user: return 0
+        acc = await self.mail_repo.get_active_gmail(session, user.id)
+        if not acc: return 0
+
         saved = 0
-        async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return 0
-                acc = await self.mail_repo.get_active_gmail(session, user.id)
-                if not acc:
-                    return 0
-                await self.folder_repo.ensure_system_folders(session, user.id)
-                await self.link_repo.backfill_from_email_folder_id(session, user.id, limit=2000)
-                for uid, header_bytes, text_bytes in raw_list:
-                    if await self.email_repo.exists_by_uid(session, acc.id, uid):
-                        continue
-                    parsed = parse_email_preview(header_bytes, text_bytes)
-                    email = Email(
-                        user_id=user.id,
-                        mail_account_id=acc.id,
-                        imap_uid=uid,
-                        message_id=parsed["message_id"],
-                        subject=parsed["subject"],
-                        from_email=parsed["from_email"],
-                        received_at=parsed["received_at"],
-                        body_text=parsed["body_text"],
-                        has_attachments=False,
-                        folder_id=None,
-                    )
-                    await self.email_repo.save(session, email)
-                    saved += 1
+        skipped = 0
+        for uid, raw_bytes, _ in raw_list:
+            if await self.email_repo.exists_by_uid(session, acc.id, uid):
+                skipped += 1
+                continue
+            try:
+                parsed = parse_email_preview(raw_bytes, b"")
+            except Exception as e:
+                logger.warning("Parser failed for uid=%s: %s", uid, e)
+                continue
+            email = Email(
+                user_id=user.id, mail_account_id=acc.id, imap_uid=uid,
+                message_id=parsed["message_id"], subject=parsed["subject"],
+                from_email=parsed["from_email"], received_at=parsed["received_at"],
+                body_text=parsed["body_text"], has_attachments=False, folder_id=None
+            )
+            await self.email_repo.save(session, email)
+            saved += 1
+        logger.info("Sync: fetched=%d, new=%d, skipped(duplicates)=%d for vk=%d", len(raw_list), saved, skipped, vk_user_id)
         return saved
 
-    async def _ai_backfill_for_last(self, vk_user_id: int, limit: int = 15) -> None:
-        await ensure_schema()
-        async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return
-                emails = await self.email_repo.list_last(session, user.id, limit=limit)
-                ids = [e.id for e in emails if not e.ai_summary]
-                if ids:
-                    await self._ai_classify_and_assign(vk_user_id, email_ids=ids)
+    async def _ai_backfill_for_last(self, session, vk_user_id: int, limit: int = 15) -> None:
+        user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+        if not user: return
+        emails = await self.email_repo.list_last(session, user.id, limit=limit)
+        ids = [e.id for e in emails if not e.ai_summary]
+        if ids:
+            await self._ai_classify_and_assign(session, vk_user_id, ids)
 
-    async def _ai_backfill_for_uids_robust(self, vk_user_id: int, uids: list[int]) -> None:
-        if not uids:
-            return
-        await ensure_schema()
-        async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return
-                acc = await self.mail_repo.get_active_gmail(session, user.id)
-                if not acc:
-                    return
-                q1 = select(Email).where(Email.mail_account_id == acc.id, Email.imap_uid.in_(uids))
-                emails = list((await session.execute(q1)).scalars().all())
-                if not emails:
-                    q2 = select(Email).where(Email.user_id == user.id, Email.imap_uid.in_(uids))
-                    emails = list((await session.execute(q2)).scalars().all())
-                ids = [e.id for e in emails if not e.ai_summary]
-                if ids:
-                    await self._ai_classify_and_assign(vk_user_id, email_ids=ids)
+    async def _ai_backfill_for_uids_robust(self, session, vk_user_id: int, uids: list[int]) -> None:
+        if not uids: return
+        user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+        if not user: return
+        acc = await self.mail_repo.get_active_gmail(session, user.id)
+        if not acc: return
+        
+        q1 = select(Email).where(Email.mail_account_id == acc.id, Email.imap_uid.in_(uids))
+        emails = list((await session.execute(q1)).scalars().all())
+        if not emails:
+            q2 = select(Email).where(Email.user_id == user.id, Email.imap_uid.in_(uids))
+            emails = list((await session.execute(q2)).scalars().all())
+            
+        ids = [e.id for e in emails if not e.ai_summary]
+        if ids:
+            await self._ai_classify_and_assign(session, vk_user_id, ids)
 
-    async def _ai_classify_and_assign(self, vk_user_id: int, email_ids: list[int]) -> None:
-        await ensure_schema()
-        async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return
-                folders = await self.folder_repo.ensure_system_folders(session, user.id)
-                spam_folder = folders.get("Спам")
-                important_folder = folders.get("Важное")
-                custom_folder = await self.folder_repo.get_custom_folder(session, user.id)
-                custom_folder_name = custom_folder.name if custom_folder else None
-                rule_texts: list[str] = []
-                custom_rules_payload: list[dict] = []
-                if custom_folder:
-                    rules = await self.rule_repo.list_active_by_folder(session, custom_folder.id)
-                    rule_texts = [r.rule_text for r in rules]
-                    custom_rules_payload = [{"folder": custom_folder.name, "rule_text": r.rule_text} for r in rules]
-                emails = list((await session.execute(select(Email).where(Email.id.in_(email_ids)))).scalars().all())
-                for e in emails:
-                    if e.ai_summary:
-                        continue
-                    received_str = e.received_at.isoformat() if e.received_at else None
-                    user_folders = [custom_folder_name] if custom_folder_name else []
-                    try:
-                        result = await self.ai_client.classify_email(
-                            subject=e.subject,
-                            from_email=e.from_email,
-                            received_at=received_str,
-                            body_snippet=e.body_text,
-                            user_folders=user_folders,
-                            user_rules=custom_rules_payload,
-                        )
-                        summary = (result.summary or "").strip()
-                        if len(summary) > 150:
-                            summary = summary[:150].rstrip() + "…"
-                        e.ai_summary = summary or None
-                        e.ai_importance = result.importance
-                        e.ai_deadline = result.deadline
-                        e.ai_actions = json.dumps(result.actions or [], ensure_ascii=False)
-                        e.ai_category = (result.category or "")[:64]
-                        e.ai_confidence = None
-                        e.ai_classified_at = datetime.now(timezone.utc)
-                        primary_name = (result.suggested_folder or "Несортированное").strip()
-                        ai_deadline = result.deadline
-                        ai_actions = result.actions or []
-                    except Exception as ex:
-                        logger.exception("AI failed for email_id=%s: %s", e.id, ex)
-                        primary_name = guess_folder_fallback(e.subject, e.from_email, e.body_text)
-                        e.ai_summary = None
-                        e.ai_importance = None
-                        e.ai_deadline = None
-                        e.ai_actions = None
-                        e.ai_category = None
-                        e.ai_confidence = None
-                        e.ai_classified_at = datetime.now(timezone.utc)
-                        ai_deadline = None
-                        ai_actions = []
-                    primary_folder = folders.get(primary_name)
-                    if not primary_folder and custom_folder and primary_name == custom_folder.name:
-                        primary_folder = custom_folder
-                    if not primary_folder:
-                        primary_folder = folders["Несортированное"]
-                        primary_name = "Несортированное"
-                    if primary_name == "Спам" and spam_folder:
-                        e.folder_id = spam_folder.id
-                        await self.link_repo.add_link_if_missing(session, e.id, spam_folder.id)
-                        continue
-                    e.folder_id = primary_folder.id
-                    await self.link_repo.add_link_if_missing(session, e.id, primary_folder.id)
-                    if important_folder and _need_important(e.ai_importance, ai_deadline, ai_actions):
-                        await self.link_repo.add_link_if_missing(session, e.id, important_folder.id)
-                    if custom_folder and self._matches_keywords(e, rule_texts):
-                        await self.link_repo.add_link_if_missing(session, e.id, custom_folder.id)
-
-    @staticmethod
-    def _matches_keywords(e: Email, rule_texts: list[str]) -> bool:
-        if not rule_texts:
-            return False
-        text = " ".join([e.subject or "", e.from_email or "", e.body_text or ""]).casefold()
-        for kw in rule_texts:
-            k = (kw or "").strip().casefold()
-            if k and k in text:
-                return True
-        return False
+    async def _ai_classify_and_assign(self, session, vk_user_id: int, email_ids: list[int]) -> None:
+        user = await self.user_repo.get_by_vk_id(session, vk_user_id)
+        if not user: return
+        
+        folders = await self.folder_repo.ensure_system_folders(session, user.id)
+        important_folder = folders.get("Важное")
+        custom_folders = await self.folder_repo.get_custom_folders(session, user.id)
+        custom_folder_names = [f.name for f in custom_folders]
+        
+        custom_rules_payload = []
+        if custom_folders:
+            for cf in custom_folders:
+                rules = await self.rule_repo.list_active_by_folder(session, cf.id)
+                custom_rules_payload.extend([{"folder": cf.name, "rule_text": r.rule_text} for r in rules])
+                
+        emails = list((await session.execute(select(Email).where(Email.id.in_(email_ids)))).scalars().all())
+        
+        for e in emails:
+            if e.ai_summary: continue
+            received_str = e.received_at.isoformat() if e.received_at else None
+            
+            try:
+                result = await self.ai_client.classify_email(
+                    subject=e.subject, from_email=e.from_email, received_at=received_str,
+                    body_snippet=e.body_text, user_folders=custom_folder_names, user_rules=custom_rules_payload
+                )
+                summary = (result.summary or "").strip()[:150]
+                e.ai_summary = summary
+                e.ai_importance = result.importance
+                e.ai_deadline = result.deadline
+                e.ai_actions = json.dumps(result.actions or [], ensure_ascii=False)
+                e.ai_category = (result.category or "")[:64]
+                e.ai_classified_at = datetime.now(timezone.utc)
+                primary_name = (result.suggested_folder or "Важное").strip()
+                ai_deadline = result.deadline
+                ai_actions = result.actions or []
+            except Exception as ex:
+                logger.warning("AI failed for email %s, using fallback: %s", e.id, ex)
+                primary_name = guess_folder_fallback(e.subject, e.from_email, e.body_text)
+                e.ai_summary = None
+                e.ai_classified_at = datetime.now(timezone.utc)
+                ai_deadline = None
+                ai_actions = []
+                
+            primary_folder = folders.get(primary_name)
+            if not primary_folder:
+                custom = next((f for f in custom_folders if f.name == primary_name), None)
+                primary_folder = custom
+            if not primary_folder:
+                primary_folder = folders.get("Важное")
+                primary_name = "Важное"
+                
+            if primary_folder:
+                e.folder_id = primary_folder.id
+                await self.link_repo.add_link_if_missing(session, e.id, primary_folder.id)
+            if important_folder and _need_important(e.ai_importance, ai_deadline, ai_actions):
+                await self.link_repo.add_link_if_missing(session, e.id, important_folder.id)
 
     async def build_digest_text(self, vk_user_id: int, limit: int = 5) -> tuple[bool, str]:
         await ensure_schema()
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return False, "Сначала напиши «Начать»."
+                if not user: return False, "Сначала напиши «Начать»."
                 emails = await self.email_repo.list_last(session, user.id, limit=limit)
-                if not emails:
-                    return True, "Писем пока нет. Нажми «Проверить почту»."
+                if not emails: return True, "Писем пока нет."
+                
                 lines = ["📬 Дайджест (саммари последних писем):"]
-                missing = 0
                 for e in emails:
-                    if not e.ai_summary:
-                        missing += 1
-                        continue
-                    frm = e.from_email or "(неизвестно)"
-                    subj = e.subject or "(без темы)"
+                    if not e.ai_summary: continue
+                    frm = e.from_email or "(unknown)"
+                    subj = e.subject or "(no subject)"
                     lines.append(f"- {frm} | {subj}\n{e.ai_summary}")
-                if missing > 0:
-                    lines.append(f"\n⚠️ Саммари для остальных ({missing}) ещё не готово.")
-                if len(lines) == 1:
-                    return True, "Саммари ещё не готово. Подожди автопроверку или нажми «Проверить почту»."
                 return True, _truncate_vk("\n".join(lines))
 
     async def poll_new_emails_forever(self, api: API, interval_sec: int = 300) -> None:
         await ensure_schema()
         from app.services.reminder_service import reminder_service
-        reminder_service.start(api, interval_sec=settings.REMINDER_CHECK_INTERVAL_SEC)
+        reminder_service.start(api, interval_sec=60)
+        logger.info("Background polling started (every %ds)", interval_sec)
+        
         while True:
             try:
                 async with self._poll_lock:
                     await self._poll_once(api)
             except Exception:
-                logger.exception("Background poll iteration failed")
+                logger.exception("Poll loop error")
             await asyncio.sleep(interval_sec)
 
     async def _poll_once(self, api: API) -> None:
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 pairs = await self.mail_repo.list_active_gmail_with_vk(session)
-        for acc, vk_user_id in pairs:
-            try:
-                async with AsyncSessionMaker() as session:
-                    async with session.begin():
+                for acc, vk_user_id in pairs:
+                    try:
+                        if not acc.app_password:
+                            logger.warning("Empty password for vk_id=%s", vk_user_id)
+                            continue
+                            
+                        decrypted_pass = decrypt(acc.app_password)
                         max_uid = await self.email_repo.max_uid(session, acc.id)
-                        raw_list = await fetch_since_uid_gmail_preview(
-                            acc.email_address,
-                            decrypt(acc.app_password),
-                            since_uid=max_uid,
-                            max_messages=200,
-                        )
+                        raw_list = await fetch_since_uid_gmail_preview(acc.email_address, decrypted_pass, since_uid=max_uid, max_messages=200)
+                        
                         if not raw_list:
                             continue
-                        saved = await self._store_raw_only_new(vk_user_id, raw_list)
+                            
+                        saved = await self._store_raw_only_new(session, vk_user_id, raw_list)
                         uids = [uid for uid, _, _ in raw_list]
-                        await self._ai_backfill_for_uids_robust(vk_user_id, uids=uids)
+                        await self._ai_backfill_for_uids_robust(session, vk_user_id, uids)
+                        
                         if saved > 0:
-                            await api.messages.send(
-                                user_id=vk_user_id,
-                                random_id=0,
-                                message=f"✅ Новые письма: {saved}. Я обработал их и разложил по папкам.",
-                            )
-            except Exception:
-                logger.exception("Polling failed for vk_user_id=%s", vk_user_id)
+                            await api.messages.send(user_id=vk_user_id, random_id=0, message=f"✅ Новые письма: {saved}. Обработал и разложил по папкам.")
+                    except Exception:
+                        logger.exception("Polling failed for vk_user_id=%s", vk_user_id)
 
 email_service = EmailService()
 
@@ -1741,23 +1797,15 @@ email_service = EmailService()
 # FILE: services/folder_service.py
 
 from __future__ import annotations
-
-from dataclasses import dataclass
-
+import difflib
 from app.db.init_db import ensure_schema
 from app.db.session import AsyncSessionMaker
 from app.db.repositories.user_repository import UserRepository
 from app.db.repositories.mail_account_repository import MailAccountRepository
-from app.db.repositories.folder_repository import FolderRepository, SYSTEM_FOLDERS
+from app.db.repositories.folder_repository import FolderRepository, SYSTEM_FOLDERS, MAX_CUSTOM_FOLDERS
 from app.db.repositories.custom_rule_repository import CustomRuleRepository
 from app.db.repositories.email_folder_link_repository import EmailFolderLinkRepository
 from app.db.repositories.email_repository import EmailRepository
-
-
-@dataclass
-class GmailAccountInfo:
-    email_address: str
-
 
 class FolderService:
     def __init__(self) -> None:
@@ -1773,114 +1821,70 @@ class FolderService:
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return None
+                if not user: return None
                 return await self.mail_repo.get_active_gmail(session, user.id)
 
-    async def get_folder_menu_info(self, vk_user_id: int) -> tuple[list[str], bool, str | None]:
-        """
-        Возвращает:
-        - folder_names: системные + кастомная (если есть)
-        - can_create_custom: можно ли создать кастомную
-        - custom_name: имя кастомной (если есть)
-        """
+    async def get_folder_menu_info(self, vk_user_id: int) -> tuple[list[str], bool, list[str]]:
+        """Возвращает: [все_папки, можно_создать, список_кастомных_папок]"""
         await ensure_schema()
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return SYSTEM_FOLDERS[:], True, None
-
+                if not user: return SYSTEM_FOLDERS[:], True, []
                 await self.folder_repo.ensure_system_folders(session, user.id)
-                custom = await self.folder_repo.get_custom_folder(session, user.id)
+                custom_folders = await self.folder_repo.get_custom_folders(session, user.id)
+                folder_names = SYSTEM_FOLDERS[:] + [f.name for f in custom_folders]
+                can_create = await self.folder_repo.count_custom_folders(session, user.id) < MAX_CUSTOM_FOLDERS
+                return folder_names, can_create, [f.name for f in custom_folders]
 
-                folder_names = SYSTEM_FOLDERS[:]
-                custom_name = None
-                if custom:
-                    custom_name = custom.name
-                    folder_names.append(custom.name)
-
-                can_create_custom = custom is None
-                return folder_names, can_create_custom, custom_name
-
-    async def create_custom_folder(self, vk_user_id: int, name: str) -> tuple[bool, str]:
+    async def create_custom_folder_ai(self, vk_user_id: int, intent_name: str, intent_desc: str, intent_keywords: list[str]) -> tuple[bool, str]:
         await ensure_schema()
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return False, "Сначала напиши «Начать»."
-
+                if not user: return False, "Сначала напиши «Начать»."
                 await self.folder_repo.ensure_system_folders(session, user.id)
-                ok, code, folder = await self.folder_repo.create_custom_folder(session, user.id, name=name)
-                if not ok and code == "CUSTOM_EXISTS":
-                    return False, f"Кастомная папка уже существует: «{folder.name}»"
-                return True, f"Создал твою папку: «{name}». Теперь можешь добавить ключевые слова."
+                
+                count = await self.folder_repo.count_custom_folders(session, user.id)
+                if count >= MAX_CUSTOM_FOLDERS:
+                    return False, f"❌ Лимит достигнут: {MAX_CUSTOM_FOLDERS} кастомных папки."
+                
+                existing = await self.folder_repo.list_by_user(session, user.id)
+                existing_names = [f.name.strip().casefold() for f in existing]
+                new_norm = intent_name.strip().casefold()
+                
+                if new_norm in existing_names:
+                    return False, f"❌ Папка «{intent_name}» уже существует."
+                for ex in existing_names:
+                    if difflib.SequenceMatcher(None, new_norm, ex).ratio() > 0.85:
+                        return False, f"⚠️ Название слишком похоже на «{ex}». Уточните."
+                
+                folder = await self.folder_repo.create(session, user.id, name=intent_name, is_system=False)
+                await self.folder_repo.update_description(session, folder.id, intent_desc)
+                for kw in intent_keywords:
+                    await self.rule_repo.add_rule_if_missing(session, user.id, folder.id, kw)
+                return True, f"✅ Создал папку «{intent_name}».\n📝 {intent_desc}"
 
-    async def add_keywords_to_custom_folder(self, vk_user_id: int, keywords: list[str]) -> tuple[bool, str]:
-        """
-        Добавляет ключевые слова к кастомной папке.
-        Также делает backfill по последним письмам: если письмо подходит — добавляет линк в кастомную.
-        """
-        keywords = [k.strip() for k in (keywords or [])]
-        keywords = [k for k in keywords if k]
-        if not keywords:
-            return False, "Не нашёл ключевых слов. Введи через запятую, например: invoice, оплата"
-
+    async def delete_custom_folder(self, vk_user_id: int, folder_id: int) -> bool:
         await ensure_schema()
         async with AsyncSessionMaker() as session:
             async with session.begin():
                 user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return False, "Сначала напиши «Начать»."
-
-                await self.folder_repo.ensure_system_folders(session, user.id)
-                custom = await self.folder_repo.get_custom_folder(session, user.id)
-                if not custom:
-                    return False, "Сначала создай кастомную папку («Мои папки» → «Создать мою папку»)."
-
-                added = 0
-                for kw in keywords:
-                    ok = await self.rule_repo.add_rule_if_missing(session, user.id, custom.id, kw)
-                    if ok:
-                        added += 1
-
-                # backfill: пробегаем последние 300 писем и добавляем кастомную папку, если совпадает
-                rules = await self.rule_repo.list_active_by_folder(session, custom.id)
-                rule_texts = [r.rule_text for r in rules]
-
-                emails = await self.email_repo.list_last(session, user.id, limit=300)
-                backfilled = 0
-                for e in emails:
-                    if self._email_matches_keywords(e.subject, e.from_email, e.body_text, rule_texts):
-                        ok2 = await self.link_repo.add_link_if_missing(session, e.id, custom.id)
-                        if ok2:
-                            backfilled += 1
-
-                return True, f"Добавил ключевых слов: {added}. Обновил писем в папке по ключевым словам: {backfilled}."
-
-    @staticmethod
-    def _email_matches_keywords(subject: str | None, from_email: str | None, body_text: str | None, rule_texts: list[str]) -> bool:
-        text = " ".join([subject or "", from_email or "", body_text or ""]).casefold()
-        for kw in rule_texts:
-            k = (kw or "").strip().casefold()
-            if not k:
-                continue
-            if k in text:
-                return True
-        return False
+                if not user: return False
+                return await self.folder_repo.delete_custom_folder(session, user.id, folder_id)
 
 ================================================================================
 # FILE: services/folder_view_service.py
 
-from sqlalchemy import select, func
-
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.init_db import ensure_schema
 from app.db.session import AsyncSessionMaker
 from app.db.repositories.user_repository import UserRepository
 from app.db.repositories.folder_repository import FolderRepository
 from app.db.repositories.email_folder_link_repository import EmailFolderLinkRepository
-
+from app.models.email import Email
+from app.models.email_folder_link import EmailFolderLink
 
 class FolderViewService:
     def __init__(self) -> None:
@@ -1888,40 +1892,22 @@ class FolderViewService:
         self.folder_repo = FolderRepository()
         self.link_repo = EmailFolderLinkRepository()
 
-    async def last_emails_in_folder(self, vk_user_id: int, folder_name: str, limit: int = 5) -> str:
-        await ensure_schema()
-        async with AsyncSessionMaker() as session:
-            async with session.begin():
-                user = await self.user_repo.get_by_vk_id(session, vk_user_id)
-                if not user:
-                    return "Сначала напиши «Начать»."
+    async def get_folder_email_ids(self, session: AsyncSession, user_id: int, folder_name: str) -> list[int]:
+        folders = await self.folder_repo.ensure_system_folders(session, user_id)
+        folder = folders.get(folder_name) or await self.folder_repo.get_by_name(session, user_id, folder_name)
+        if not folder: return []
+        res = await session.execute(
+            select(EmailFolderLink.email_id)
+            .where(EmailFolderLink.folder_id == folder.id)
+            .order_by(EmailFolderLink.id.desc())
+        )
+        return [row[0] for row in res.all()]
 
-                folders = await self.folder_repo.ensure_system_folders(session, user.id)
-                folder = folders.get(folder_name)
-                if not folder:
-                    # может быть кастомная
-                    folder = await self.folder_repo.get_by_name(session, user.id, folder_name)
-                if not folder:
-                    return "Папка не найдена."
-
-                # мягкая миграция legacy folder_id -> links
-                await self.link_repo.backfill_from_email_folder_id(session, user.id, limit=2000)
-
-                total = await self.link_repo.count_in_folder(session, user.id, folder.id)
-                if total == 0:
-                    return f"Папка «{folder_name}»: писем пока нет."
-
-                emails = await self.link_repo.list_last_in_folder(session, user.id, folder.id, limit=limit)
-
-                lines = [
-                    f"Папка: {folder_name} | всего писем: {total} | показываю последние {min(limit, total)}:"
-                ]
-                for e in emails:
-                    subj = e.subject or "(без темы)"
-                    frm = e.from_email or "(неизвестно)"
-                    lines.append(f"- {frm} | {subj}")
-
-                return "\n".join(lines)
+    async def get_email_by_index(self, session: AsyncSession, user_id: int, email_ids: list[int], index: int) -> Email | None:
+        if index < 0 or index >= len(email_ids): return None
+        eid = email_ids[index]
+        res = await session.execute(select(Email).where(Email.id == eid, Email.user_id == user_id))
+        return res.scalar_one_or_none()
 
 ================================================================================
 # FILE: services/mail_service.py
@@ -1958,12 +1944,12 @@ class MailService:
 # FILE: services/reminder_service.py
 
 import asyncio
-import logging
-from datetime import datetime, timezone, timedelta
 import json
+import logging
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from vkbottle import API
-
 from app.core.settings import settings
 from app.db.session import AsyncSessionMaker
 from app.models.user import User
@@ -1974,15 +1960,19 @@ logger = logging.getLogger("reminder")
 class ReminderService:
     def __init__(self) -> None:
         self._running = False
+        self.tz = ZoneInfo(settings.USER_TIMEZONE)
 
-    def start(self, api: API, interval_sec: int = 3600) -> None:
-        if self._running:
-            return
+    def start(self, api: API, interval_sec: int | None = None) -> None:
+        if self._running: return
         self._running = True
-        asyncio.ensure_future(self._loop(api, interval_sec))
+        interval = interval_sec or settings.REMINDER_CHECK_INTERVAL_SEC
+        asyncio.ensure_future(self._loop(api, interval))
+
+    def stop(self) -> None:
+        self._running = False
 
     async def _loop(self, api: API, interval_sec: int) -> None:
-        logger.info("Reminder service started (every %ds)", interval_sec)
+        logger.info(f"Reminder service started (every {interval_sec}s, tz={settings.USER_TIMEZONE})")
         while self._running:
             try:
                 await self._check_and_send(api)
@@ -1991,41 +1981,70 @@ class ReminderService:
             await asyncio.sleep(interval_sec)
 
     async def _check_and_send(self, api: API) -> None:
+        now_tz = datetime.now(self.tz)
         async with AsyncSessionMaker() as session:
-            async with session.begin():
-                users_res = await session.execute(select(User))
-                for user in users_res.scalars().all():
-                    await self._process_user(api, session, user.id, user.vk_user_id)
+            # ✅ ТОЛЬКО HIGH + есть дедлайн + не все напоминания отправлены
+            stmt = select(Email).where(
+                Email.ai_importance == "high",
+                Email.ai_deadline.isnot(None),
+                Email.folder_id.isnot(None)
+            )
+            result = await session.execute(stmt)
+            emails = result.scalars().all()
+            
+            for email in emails:
+                try:
+                    await self._process_email(api, session, email, now_tz)
+                except Exception:
+                    logger.warning(f"Reminder processing failed for email {email.id}")
+            await session.commit()
 
-    async def _process_user(self, api: API, session, user_id: int, vk_id: int) -> None:
-        cooldown = datetime.now(timezone.utc) - timedelta(hours=settings.REMINDER_COOLDOWN_HOURS)
-        stmt = select(Email).where(
-            Email.user_id == user_id,
-            (Email.ai_importance == "high") | (Email.ai_deadline.isnot(None)),
-            (Email.last_reminder_at.is_(None)) | (Email.last_reminder_at < cooldown)
-        ).order_by(Email.id.desc()).limit(3)
-        res = await session.execute(stmt)
-        emails = list(res.scalars().all())
-        if not emails:
-            return
-        reminders = []
-        for e in emails:
-            e.last_reminder_at = datetime.now(timezone.utc)
-            acts = ""
-            try:
-                a = json.loads(e.ai_actions or "[]")
-                acts = f"\n👉 Действия: {', '.join(a)}" if a else ""
-            except:
-                pass
-            dl = f"⏰ Дедлайн: {e.ai_deadline}\n" if e.ai_deadline else ""
-            reminders.append(f"📌 {e.subject or 'Важное письмо'}\n{dl}{e.ai_summary or ''}{acts}")
-        await session.commit()
-        text = "🔔 НАПОМИНАНИЕ О ВАЖНОМ:\n" + "\n\n".join(reminders)
+    async def _process_email(self, api: API, session, email: Email, now: datetime) -> None:
+        deadline_dt = self._parse_deadline(email.ai_deadline)
+        if not deadline_dt: return
+
+        deadline_tz = deadline_dt.replace(tzinfo=self.tz)
+        diff_minutes = (deadline_tz - now).total_seconds() / 60
+        sent_offsets = json.loads(email.reminder_sent or "[]")
+
+        for offset in settings.REMINDER_OFFSETS_MINUTES:
+            if str(offset) in sent_offsets: continue
+            target_diff = offset
+            if abs(diff_minutes - target_diff) <= (settings.REMINDER_TOLERANCE_SEC / 60):
+                user = await session.get(User, email.user_id)
+                if not user: continue
+
+                acts = ""
+                try:
+                    a = json.loads(email.ai_actions or "[]")
+                    acts = f"\n👉 Действия: {', '.join(a)}" if a else ""
+                except: pass
+
+                msg = (
+                    f"⏰ НАПОМИНАНИЕ ({abs(offset)}мин до дедлайна)\n"
+                    f"📌 {email.subject or 'Важное письмо'}\n"
+                    f"📅 Дедлайн: {deadline_tz.strftime('%d.%m в %H:%M')}\n"
+                    f"💡 {email.ai_summary or 'Нет саммари'}{acts}"
+                )
+                try:
+                    await api.messages.send(user_id=user.vk_user_id, random_id=0, message=msg)
+                    logger.info("Sent reminder to vk=%s for email=%s (offset=%s)", user.vk_user_id, email.id, offset)
+                    sent_offsets.append(str(offset))
+                    email.reminder_sent = json.dumps(sent_offsets)
+                    email.last_reminder_at = datetime.now(self.tz)
+                except Exception as e:
+                    logger.warning(f"Failed to send reminder for email {email.id}: {e}")
+                break  # отправляем только одно напоминание за цикл
+
+    def _parse_deadline(self, deadline_str: str | None) -> datetime | None:
+        if not deadline_str: return None
         try:
-            await api.messages.send(user_id=vk_id, random_id=0, message=text)
-            logger.info("Sent reminder to vk=%s", vk_id)
+            if " " in deadline_str:
+                return datetime.strptime(deadline_str, "%Y-%m-%d %H:%M")
+            return datetime.strptime(deadline_str, "%Y-%m-%d").replace(hour=9, minute=0)
         except Exception:
-            logger.warning("Failed to send reminder to vk=%s", vk_id)
+            logger.warning(f"Invalid deadline format: {deadline_str}")
+            return None
 
 reminder_service = ReminderService()
 

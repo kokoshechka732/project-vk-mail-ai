@@ -1,8 +1,8 @@
 import json
 from typing import Optional, List, Dict
 
-STANDARD_CATEGORIES = ["academic", "work", "events", "finance", "services", "spam", "personal", "other"]
-SYSTEM_FOLDERS = ["Важное", "Учёба", "Стажировки", "Рассылки", "Несортированное", "Спам"]
+# ✅ Синхронизировано с folder_repository.py
+SYSTEM_FOLDERS = ["Важное", "Учёба", "Работа"]
 
 def build_messages(
     subject: Optional[str],
@@ -15,51 +15,44 @@ def build_messages(
     user_folders = user_folders or []
     user_rules = user_rules or []
     allowed_folders = SYSTEM_FOLDERS + user_folders
-
+    
     payload = {
         "subject": subject or "",
         "from_email": from_email or "",
         "received_at": received_at or "",
         "body_snippet": (body_snippet or "")[:2000],
-        "standard_categories": STANDARD_CATEGORIES,
-        "user_folders": user_folders,
-        "user_rules": user_rules,
         "allowed_folders": allowed_folders,
+        "user_custom_folders": user_folders,
+        "user_rules": user_rules,
     }
-
+    
     system = (
-        "Ты — ассистент для классификации электронных писем студента.\n"
-        "Твоя задача: проанализировать письмо и вернуть JSON с его категорией, важностью, "
-        "кратким содержанием и ключевыми действиями.\n"
-        "Стандартные категории:\n"
-        '- "academic" — учёба, пары, дедлайны, оценки, расписание\n'
-        '- "work" — стажировки, вакансии, карьера, HR\n'
-        '- "events" — мероприятия, хакатоны, конференции, встречи\n'
-        '- "finance" — стипендии, оплаты, счета, налоги\n'
-        '- "services" — уведомления сервисов (GitHub, Google, Notion и т.п.)\n'
-        '- "spam" — реклама, рассылки, мусор\n'
-        '- "personal" — личные письма от людей\n'
-        '- "other" — всё остальное\n'
-        "Также учитывай пользовательские папки, если они переданы ниже.\n"
-        "Если письмо подходит под описание пользовательской папки — используй её название "
-        "в поле category вместо стандартной категории.\n"
-        "Уровень важности:\n"
-        '- "high" — срочное/важное/требует действий/дедлайн/личное обращение\n'
-        '- "medium" — полезно, но не критично\n'
-        '- "low" — можно игнорировать\n'
-        "Правила:\n"
-        "- Возвращай ТОЛЬКО JSON (без текста вокруг).\n"
-        "- summary: 1 предложение, по сути, до 150 символов.\n"
-        "- deadline: дата в формате YYYY-MM-DD или null.\n"
-        "- actions: массив строк действий (может быть []).\n"
-        "- suggested_folder: выбери строго одну папку из allowed_folders.\n"
-        "Формат ответа (строго JSON):\n"
-        '{"category":"...","importance":"low|medium|high","summary":"...",'
-        '"actions":["..."],"deadline":"YYYY-MM-DD"|null,"suggested_folder":"one of allowed_folders"}'
-    )
-
-    user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False)
-
+        "Ты — AI-ассистент для сортировки и анализа писем студента.\n"
+        "Верни СТРОГО валидный JSON. Без markdown, без комментариев, без пояснений.\n\n"
+        
+        "ДОСТУПНЫЕ ПАПКИ (suggested_folder обязан быть ОДНОЙ из них):\n"
+        "- Системные: \"Важное\", \"Учёба\", \"Работа\"\n"
+        "- Кастомные пользователя: {custom}\n\n"
+        
+        "ПРАВИЛА РАСПРЕДЕЛЕНИЯ:\n"
+        "1. \"Учёба\" -> вуз, деканат, расписание, пара, зачёт, экзамен, курсовая, библиотека, LMS, преподаватели.\n"
+        "2. \"Работа\" -> вакансии, стажировки, HR, собеседования, карьера, фриланс, бизнес-переписка.\n"
+        "3. \"Важное\" -> личная переписка, банки/налоги/госуслуги, срочные уведомления, всё требующее внимания.\n"
+        "4. Если письмо точно соответствует описанию/ключевым словам кастомной папки -> используй её.\n"
+        "5. Если не уверен -> \"Важное\".\n\n"
+        
+        "КАТЕГОРИЯ (category): academic, work, finance, services, spam, personal, other.\n"
+        "ВАЖНОСТЬ (importance): high (срочно/личное/требует действий), medium (информационное), low (рассылка/мусор).\n"
+        "Дедлайн (deadline): YYYY-MM-DD или null. ВНИМАНИЕ: ставь deadline ТОЛЬКО если importance = \"high\". Для medium/low всегда null.\n"
+        "Действия (actions): конкретные шаги или [].\n"
+        "Саммари (summary): 1 предложение, суть, <=150 символов.\n\n"
+        
+        "ФОРМАТ ОТВЕТА:\n"
+        '{"category":"...","importance":"...","summary":"...","actions":[],"deadline":"... или null","suggested_folder":"..."}'
+    ).format(custom="; ".join(user_folders) if user_folders else "(нет)")
+    
+    user = "Данные письма:\n" + json.dumps(payload, ensure_ascii=False, indent=2)
+    
     return [
         {"role": "system", "text": system},
         {"role": "user", "text": user},

@@ -37,29 +37,46 @@ def _make_preview(text: str, max_lines: int = 20, max_chars: int = 1200) -> str:
     return preview
 
 
-def parse_email_preview(header_bytes: bytes, text_snippet_bytes: bytes) -> dict:
-    msg = message_from_bytes(header_bytes or b"")
+def parse_email_preview(raw_message_bytes: bytes, _unused: bytes) -> dict:
+    if not raw_message_bytes:
+        return {"message_id": None, "subject": None, "from_email": None, "received_at": None, "body_text": None, "has_attachments": False}
+        
+    try:
+        msg = message_from_bytes(raw_message_bytes)
+    except Exception as e:
+        logger.error("Failed to parse RFC822: %s", e)
+        return {"message_id": None, "subject": None, "from_email": None, "received_at": None, "body_text": None, "has_attachments": False}
+
     subject = _decode_header(msg.get("Subject"))
     message_id = msg.get("Message-ID")
-    _name, from_addr = parseaddr(msg.get("From", ""))
+    _, from_addr = parseaddr(msg.get("From", ""))
     from_email = from_addr or None
-
+    
     received_at = None
     raw_date = msg.get("Date")
     if raw_date:
-        try:
-            received_at = parsedate_to_datetime(raw_date)
-        except Exception:
-            received_at = None
-
-    raw_text = _decode_text_bytes(text_snippet_bytes or b"")
-    body_preview = _make_preview(raw_text)
-
+        try: received_at = parsedate_to_datetime(raw_date)
+        except: pass
+        
+    body_text = None
+    for part in msg.walk():
+        content_type = part.get_content_type()
+        if content_type == "text/plain":
+            payload = part.get_payload(decode=True)
+            if payload:
+                body_text = _decode_text_bytes(payload)
+                break
+        elif content_type == "text/html" and not body_text:
+            payload = part.get_payload(decode=True)
+            if payload:
+                body_text = _decode_text_bytes(payload)
+                break
+                
     return {
         "message_id": message_id,
         "subject": subject,
         "from_email": from_email,
         "received_at": received_at,
-        "body_text": body_preview or None,
-        "has_attachments": False,
+        "body_text": _make_preview(body_text or ""),
+        "has_attachments": any(p.get_filename() for p in msg.walk()),
     }
